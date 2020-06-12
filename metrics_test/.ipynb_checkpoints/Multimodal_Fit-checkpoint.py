@@ -35,39 +35,33 @@ from ignite.handlers import ModelCheckpoint, EarlyStopping
 # -
 
 def generate_data(length):
-    x = np.empty(length)
-    sep = int(length/3.)
-    x[:sep] = 2/5*np.random.randn(sep)-4
-    x[sep:2*sep] = 0.9*np.random.randn(sep)
-    x[2*sep:] = 2/5*np.random.randn(sep)+4
-
-    y = 7*np.sin(x) + 3*abs(np.cos(x/2))*np.random.randn(len(x))
+    x = 2.5*np.random.rand(length) - 0.5
+    rand_sep = int(np.random.rand()*length)
+    y = np.empty(length)
+    y[:rand_sep] = 10*np.sin(x[:rand_sep]) + np.random.randn(rand_sep)
+    y[rand_sep:] = 10*np.cos(x[rand_sep:]) + np.random.randn(length - rand_sep)
     return x, y
+    
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(2, 20)
-        self.fc2 = nn.Linear(20, 30)
-        self.drop = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(30, 20)
+        self.fc1 = nn.Linear(2, 30)
+        self.fc2 = nn.Linear(30, 40)
+        self.drop1 = nn.Dropout(0.5)
+        self.fc3 = nn.Linear(40, 20)
         self.drop2 = nn.Dropout(0.5)
         self.fc4 = nn.Linear(20, 1)
     
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.drop(x)
+        x = self.drop1(x)
         x = F.relu(self.fc3(x))
         x = self.drop2(x)
         x = self.fc4(x)
         return x
-
-
-def score_function(engine):
-    val_loss = engine.state.metrics['loss']
-    return -val_loss
 
 
 # +
@@ -83,14 +77,14 @@ def log_training_results(trainer):
 def log_validation_results(trainer):
     val_evaluator.run(data_val)
     metrics = val_evaluator.state.metrics
-    loss = metrics["loss"]
+    loss = metrics["loss"] 
     validation_history["loss"].append(loss)
     print("Validation Results - Epoch: {}  Avg loss: {:.2f}"
           .format(trainer.state.epoch, loss))
     
 def test_data(val_data, net):
     with torch.no_grad():
-        data_pred = net(val_data.float())
+        data_pred = net(data.float())
     return data_pred
 
 
@@ -141,7 +135,7 @@ net = net.float()
 
 trainer.run(data_train, max_epochs=epochs)
 
-torch.save(net.state_dict(), "./weights/heteroscedastic/3layer_epochs_{}_withdropout.pt".format(epochs))
+torch.save(net.state_dict(), "./weights/multimodal/3layer_epochs_{}_withdropout.pt".format(epochs))
 # -
 
 plt.plot(training_history['loss'],label="Training Loss")
@@ -149,7 +143,7 @@ plt.plot(validation_history['loss'],label="Validation Loss")
 plt.xlabel('No. of Epochs')
 plt.ylabel('Loss')
 plt.legend(frameon=False)
-plt.savefig("./plots/heteroscedastic/loss_function_3layer_noepochs_{}_withdropout.png".format(epochs))
+plt.savefig("./plots/multimodal/loss_function_3layer_noepochs_{}_withdropout.png".format(epochs))
 plt.show()
 
 test_length = 750
@@ -160,5 +154,7 @@ predictions = []
 for data in data_pred_torch:
     predictions.append(test_data(data, net))
 plt.plot(data_pred, predictions, '.b', label = "Predicted Data")
-plt.savefig("./plots/heteroscedastic/pred_pts{}_nrepochs_{}_3layer_withdropout.png".format(test_length, epochs))
+plt.savefig("./plots/multimodal/pred_pts{}_nrepochs_{}_3layer_withdropout.png".format(test_length, epochs))
 plt.show()
+
+
