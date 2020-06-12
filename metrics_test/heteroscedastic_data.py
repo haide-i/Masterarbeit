@@ -4,7 +4,7 @@ import csv
 import math
 
 #x = np.arange(0, 100, 0.5)
-nr_data = 7500
+nr_data = 750
 x = np.zeros(nr_data)
 y = np.zeros(len(x))
 print(len(x))
@@ -19,4 +19,4 @@ for j in range(1):
 
         y[i] = 7*math.sin(x[i]) + 3*abs(math.cos(x[i]/2))*np.random.randn() 
 
-    np.savetxt("./data/paper_heteroscedastic_data.txt", (x, y))
+    np.savetxt("./data/paper_heteroscedastic_data_test.txt", (x, y))

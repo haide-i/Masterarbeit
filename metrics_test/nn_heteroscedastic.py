@@ -20,15 +20,19 @@ from ignite.handlers import ModelCheckpoint, EarlyStopping
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(2, 50)
-        self.fc2 = nn.Linear(50, 40)
-        self.fc3 = nn.Linear(40, 40)
-        self.fc4 = nn.Linear(40, 1)
+        self.fc1 = nn.Linear(2, 20)
+        self.fc2 = nn.Linear(20, 30)
+        self.drop = nn.Dropout(0.5)
+        self.fc3 = nn.Linear(30, 20)
+        self.drop2 = nn.Dropout(0.5)
+        self.fc4 = nn.Linear(20, 1)
     
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
+        x = self.drop(x)
         x = F.relu(self.fc3(x))
+        x = self.drop2(x)
         x = self.fc4(x)
         return x
     
@@ -65,7 +69,7 @@ def latent_variables(x):
 
 def test_data(val_data, net):
     with torch.no_grad():
-        data_pred = net(data.float())
+        data_pred = net(val_data.float())
     return data_pred
     
     
@@ -96,7 +100,7 @@ data_val = torch.utils.data.DataLoader(dataset_val, batch_size=1, shuffle=False)
 
 
 net = Net()
-epochs = 400
+epochs = 10
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
@@ -112,8 +116,8 @@ last_epoch = []
 
 RunningAverage(output_transform=lambda x: x).attach(trainer, 'loss')
 
-handler = EarlyStopping(patience=5, score_function=score_function, trainer=trainer)
-val_evaluator.add_event_handler(Events.COMPLETED, handler)
+#handler = EarlyStopping(patience=5, score_function=score_function, trainer=trainer)
+#val_evaluator.add_event_handler(Events.COMPLETED, handler)
 
 trainer.add_event_handler(Events.EPOCH_COMPLETED, log_training_results)
 trainer.add_event_handler(Events.EPOCH_COMPLETED, log_validation_results)
@@ -121,12 +125,14 @@ net = net.float()
 
 trainer.run(data_train, max_epochs=epochs)
 
+torch.save(net.state_dict(), "./weights/3layer_epochs_{}_withdropout.pt".format(epochs))
+
 plt.plot(training_history['loss'],label="Training Loss")
 plt.plot(validation_history['loss'],label="Validation Loss")
 plt.xlabel('No. of Epochs')
 plt.ylabel('Loss')
 plt.legend(frameon=False)
-plt.savefig("./plots/loss_function.png")
+plt.savefig("./plots/heteroscedastic_loss_function_3layer_noepochs_{}_withdropout.png".format(epochs))
 plt.show()
 
 
@@ -145,7 +151,7 @@ for j in range(4):
         data_pred = np.append(data_pred, test_data(data, net))
     axs[j].plot(val_data, data_pred, '.b', label = "Predicted Data")
 
-plt.savefig("./plots/heteroscedastic_prediction_full_no_epochs_{}.png".format(epochs))
+plt.savefig("./plots/heteroscedastic_prediction_full_no_epochs_{}_3layer_withdropout.png".format(epochs))
 plt.show()
 plt.close()
 fig, axs = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
@@ -163,7 +169,7 @@ for j in range(4):
         data_pred = np.append(data_pred, test_data(data, net))
     axs[j].plot(val_data, data_pred, '.b', label = "Predicted Data")
 
-plt.savefig("./plots/heteroscedastic_prediction_sparse_no_epochs_{}.png".format(epochs))
+plt.savefig("./plots/heteroscedastic_prediction_sparse_no_epochs_{}_3layer_withdropout.png".format(epochs))
 plt.show()
 plt.close()
 plt.plot(x_val1, y_val1, '.r', label = "Real Data")
