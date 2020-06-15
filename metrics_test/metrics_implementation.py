@@ -75,12 +75,31 @@ def load_data(nr):
 
 
 def kullback_leibler(x1, x2):
-    D_KL = np.sum(x1 * np.log(x1/x2))
+    D_KL= 0
+    for i in range(len(x1)):
+        if x1[i] != 0 and x2[i] != 0:
+            D_KL += x1[i] * np.log(x1[i]/x2[i])
     return D_KL
 
 
-def emd_distance(x1, x2):
-    
+def hellinger_distance(y1, y2):
+    return np.sqrt(np.sum((np.sqrt(y1) - np.sqrt(y2)) ** 2)) / np.sqrt(2)
+
+
+def kolmogorov_metric(y1, y2):
+    return np.max(np.cumsum(y1)-np.cumsum(y2))
+
+
+def separation_distance(y1, y2):
+    return(np.max(1-y1/y2))
+
+
+def total_variation(y1, y2):
+    return 0.5*np.sum(abs(y1-y2))
+
+
+def chi_squared(y1, y2):
+    return 0.5*np.sum((y1-y2)**2/(y1+y2))
 
 
 x1, y1 = load_data(0)
@@ -96,12 +115,8 @@ y4 = normalize_it(y4)
 real_x = np.arange(-5, 5, 0.1)
 real_y =  7*np.sin(real_x) + 3*abs(np.cos(real_x/2))
 
-plt.plot(x1, y1, '.b')
-
-plt.plot(x2, y2, '.r')
-
 net = Net()
-net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_1000_withdropout.pt'))
+net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
 net.eval()
 
 data_pred1, _ = generate_data()
@@ -132,10 +147,38 @@ plt.plot(data_pred1, normalize_it(real_y))
 plt.savefig("./plots/metrics/comparison_withuncertainty_real.png")
 plt.show()
 
-D_KL12 = kullback_leibler(predictions, predictions2)
-print(D_KL12)
+# +
+predictions = normalize_it(predictions)
+real_y = normalize_it(real_y)
+predictions2 = normalize_it(predictions2)
+y = normalize_it(y)
 
-print(wasserstein_distance(normalize_it(predictions), normalize_it(real_y)))
-print(wasserstein_distance(normalize_it(predictions2), normalize_it(real_y)))
-print(wasserstein_distance(normalize_it(y), normalize_it(real_y)))
 
+print(kullback_leibler(predictions, real_y))
+print(kullback_leibler(predictions2, real_y))
+print(kullback_leibler(y, real_y))
+# -
+
+print(wasserstein_distance(predictions, real_y))
+print(wasserstein_distance(predictions2, real_y))
+print(wasserstein_distance(y, real_y))
+
+print(hellinger_distance(predictions, real_y))
+print(hellinger_distance(predictions2, real_y))
+print(hellinger_distance(y, real_y))
+
+print(kolmogorov_metric(predictions, real_y))
+print(kolmogorov_metric(predictions2, real_y))
+print(kolmogorov_metric(y, real_y))
+
+print(separation_distance(predictions, real_y))
+print(separation_distance(predictions2, real_y))
+print(separation_distance(y, real_y))
+
+print(total_variation(predictions, real_y))
+print(total_variation(predictions2, real_y))
+print(total_variation(y, real_y))
+
+print(chi_squared(predictions, real_y))
+print(chi_squared(predictions2, real_y))
+print(chi_squared(y, real_y))

@@ -49,11 +49,11 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(2, 20)
-        self.fc2 = nn.Linear(20, 30)
+        self.fc2 = nn.Linear(20, 60)
         self.drop = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(30, 20)
+        self.fc3 = nn.Linear(60, 40)
         self.drop2 = nn.Dropout(0.5)
-        self.fc4 = nn.Linear(20, 1)
+        self.fc4 = nn.Linear(40, 1)
     
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -99,6 +99,8 @@ def test_data(val_data, net):
 length = 750
 x, y = generate_data(length)
 x_val, y_val = generate_data(length)
+plt.plot(x, y, '.r')
+plt.show()
 
 # +
 device = torch.device("cpu")
@@ -141,7 +143,7 @@ net = net.float()
 
 trainer.run(data_train, max_epochs=epochs)
 
-torch.save(net.state_dict(), "./weights/heteroscedastic/3layer_epochs_{}_withdropout.pt".format(epochs))
+torch.save(net.state_dict(), "./weights/heteroscedastic/3layer_206040_epochs_{}_withdropout.pt".format(epochs))
 # -
 
 plt.plot(training_history['loss'],label="Training Loss")
@@ -149,10 +151,10 @@ plt.plot(validation_history['loss'],label="Validation Loss")
 plt.xlabel('No. of Epochs')
 plt.ylabel('Loss')
 plt.legend(frameon=False)
-plt.savefig("./plots/heteroscedastic/loss_function_3layer_noepochs_{}_withdropout.png".format(epochs))
+plt.savefig("./plots/heteroscedastic/loss_function_206040_noepochs_{}_withdropout.png".format(epochs))
 plt.show()
 
-test_length = 750
+test_length = 75000
 data_pred1, _ = generate_data(test_length)
 data_pred = np.transpose(np.vstack((data_pred1, np.random.randn(len(data_pred1)))))
 data_pred_torch = torch.from_numpy(data_pred).float()
@@ -161,7 +163,7 @@ for data in data_pred_torch:
     predictions.append(test_data(data, net))
 np.savetxt("pred_metric_test.txt", (data_pred1, predictions))
 plt.plot(data_pred1, predictions, '.b', label = "Predicted Data")
-plt.savefig("./plots/heteroscedastic/pred_pts{}_nrepochs_{}_3layer_withdropout.png".format(test_length, epochs))
+plt.savefig("./plots/heteroscedastic/pred_pts{}_nrepochs_{}_206040_withdropout.png".format(test_length, epochs))
 plt.show()
 
 
