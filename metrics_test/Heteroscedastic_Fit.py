@@ -118,7 +118,7 @@ data_val = DataLoader(dataset_val, batch_size=1, shuffle=False)
 
 # +
 net = Net()
-epochs = 20
+epochs = 200
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
@@ -153,12 +153,15 @@ plt.savefig("./plots/heteroscedastic/loss_function_3layer_noepochs_{}_withdropou
 plt.show()
 
 test_length = 750
-data_pred, _ = generate_data(test_length)
-data_pred = np.transpose(np.vstack((data_pred, np.random.randn(len(data_pred)))))
+data_pred1, _ = generate_data(test_length)
+data_pred = np.transpose(np.vstack((data_pred1, np.random.randn(len(data_pred1)))))
 data_pred_torch = torch.from_numpy(data_pred).float()
 predictions = []
 for data in data_pred_torch:
     predictions.append(test_data(data, net))
-plt.plot(data_pred, predictions, '.b', label = "Predicted Data")
+np.savetxt("pred_metric_test.txt", (data_pred1, predictions))
+plt.plot(data_pred1, predictions, '.b', label = "Predicted Data")
 plt.savefig("./plots/heteroscedastic/pred_pts{}_nrepochs_{}_3layer_withdropout.png".format(test_length, epochs))
 plt.show()
+
+
