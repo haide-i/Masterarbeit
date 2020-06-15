@@ -13,14 +13,60 @@
 #     name: python3
 # ---
 
+# +
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from scipy.stats import wasserstein_distance
+import torch
+import torchvision 
+import torchvision.transforms as transforms
+from torch.autograd import Variable
+
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
 
 
-def density_measurement(x):
-    density = np.histogram(x, bins='auto')
-    return density
+# +
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.fc1 = nn.Linear(2, 20)
+        self.fc2 = nn.Linear(20, 30)
+        self.drop = nn.Dropout(0.5)
+        self.fc3 = nn.Linear(30, 20)
+        self.drop2 = nn.Dropout(0.5)
+        self.fc4 = nn.Linear(20, 1)
+    
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.drop(x)
+        x = F.relu(self.fc3(x))
+        x = self.drop2(x)
+        x = self.fc4(x)
+        return x
+    
+def test_data(val_data, net):
+    with torch.no_grad():
+        data_pred = net(val_data.float())
+    return data_pred
+
+
+# -
+
+def generate_data():
+    x = np.arange(-5, 5, 0.1)
+    y = 7*np.sin(x) + 3*abs(np.cos(x/2))*np.random.randn(len(x))
+    return x, y
+
+
+def normalize_it(y):
+    y = y + abs(np.min(y))
+    y_norm = y/np.sum(y)
+    return y_norm
 
 
 def load_data(nr):
@@ -33,32 +79,63 @@ def kullback_leibler(x1, x2):
     return D_KL
 
 
-x_test1, y_test1 = load_data(0)
-x_test2, y_test2 = load_data(1)
-x_test3, y_test3 = load_data(2)
-x_test4, y_test4 = load_data(3)
-
-plt.plot(x_test1, y_test1, '.b')
-
-plt.plot(x_test2, y_test2, '.r')
-
-x_hist1, _, _ = plt.hist(x_test1, bins = 'auto', density=True)
-x_hist2, _, _ = plt.hist(x_test2, bins = 'auto', density=True)
-x_hist3, _, _ = plt.hist(x_test3, bins = 'auto', density=True)
-x_hist4, _, _ = plt.hist(x_test4, bins = 'auto', density=True)
-
-# +
-D_KL12 = kullback_leibler(x_hist1, x_hist2)
-D_KL23 = kullback_leibler(x_hist2, x_hist3)
-D_KL34 = kullback_leibler(x_hist3, x_hist4)
-D_KL13 = kullback_leibler(x_hist1, x_hist3)
-D_KL14 = kullback_leibler(x_hist1, x_hist4)
-D_KL24= kullback_leibler(x_hist2, x_hist4)
+def emd_distance(x1, x2):
+    
 
 
+x1, y1 = load_data(0)
+y1 = normalize_it(y1)
+print(np.min(y1))
+x2, y2 = load_data(0)
+y2 = normalize_it(y2)
+x3, y3 = load_data(0)
+y3 = normalize_it(y3)
+x4, y4 = load_data(0)
+y4 = normalize_it(y4)
+
+real_x = np.arange(-5, 5, 0.1)
+real_y =  7*np.sin(real_x) + 3*abs(np.cos(real_x/2))
+
+plt.plot(x1, y1, '.b')
+
+plt.plot(x2, y2, '.r')
+
+net = Net()
+net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_1000_withdropout.pt'))
+net.eval()
+
+data_pred1, _ = generate_data()
+data_pred = np.transpose(np.vstack((data_pred1, np.random.randn(len(data_pred1)))))
+data_pred_torch = torch.from_numpy(data_pred).float()
+predictions = []
+for data in data_pred_torch:
+    predictions.append(test_data(data, net))
+predictions = np.asarray(predictions)
+plt.plot(data_pred1, normalize_it(real_y))
+plt.plot(data_pred1, normalize_it(predictions), '.b', label = "Predicted Data")
+plt.show()
+
+data_pred2, y = generate_data()
+data_pred = np.transpose(np.vstack((data_pred2, np.random.randn(len(data_pred2)))))
+data_pred_torch = torch.from_numpy(data_pred).float()
+predictions2 = []
+for data in data_pred_torch:
+    predictions2.append(test_data(data, net))
+predictions2 = np.asarray(predictions2)
+plt.plot(data_pred1, normalize_it(real_y))
+plt.plot(data_pred2, normalize_it(predictions2), '.b', label = "Predicted Data")
+plt.savefig("./plots/metrics/comparison_pred_real.png")
+plt.show()
+
+plt.plot(data_pred2, normalize_it(y), '.b')
+plt.plot(data_pred1, normalize_it(real_y))
+plt.savefig("./plots/metrics/comparison_withuncertainty_real.png")
+plt.show()
+
+D_KL12 = kullback_leibler(predictions, predictions2)
 print(D_KL12)
-print(D_KL23)
-print(D_KL34)
-print(D_KL13)
-print(D_KL14)
-print(D_KL24)
+
+print(wasserstein_distance(normalize_it(predictions), normalize_it(real_y)))
+print(wasserstein_distance(normalize_it(predictions2), normalize_it(real_y)))
+print(wasserstein_distance(normalize_it(y), normalize_it(real_y)))
+

@@ -118,7 +118,7 @@ data_val = DataLoader(dataset_val, batch_size=1, shuffle=False)
 
 # +
 net = Net()
-epochs = 200
+epochs = 1000
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
