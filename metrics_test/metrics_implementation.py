@@ -119,7 +119,7 @@ net = Net()
 net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
 net.eval()
 
-data_pred1, _ = generate_data()
+data_pred1, test = generate_data()
 data_pred = np.transpose(np.vstack((data_pred1, np.random.randn(len(data_pred1)))))
 data_pred_torch = torch.from_numpy(data_pred).float()
 predictions = []
@@ -137,13 +137,16 @@ predictions2 = []
 for data in data_pred_torch:
     predictions2.append(test_data(data, net))
 predictions2 = np.asarray(predictions2)
-plt.plot(data_pred1, normalize_it(real_y))
+plt.plot(data_pred1, normalize_it(real_y), 'r', label='Function')
 plt.plot(data_pred2, normalize_it(predictions2), '.b', label = "Predicted Data")
+#plt.plot(data_pred2, normalize_it(y), '+g', label = 'With uncertainty')
+plt.legend(loc='upper right')
 plt.savefig("./plots/metrics/comparison_pred_real.png")
 plt.show()
 
-plt.plot(data_pred2, normalize_it(y), '.b')
-plt.plot(data_pred1, normalize_it(real_y))
+plt.plot(data_pred2, normalize_it(y), '.b', label = 'With uncertainty')
+plt.plot(data_pred1, normalize_it(real_y), 'r', label='Function')
+plt.legend(loc='upper right')
 plt.savefig("./plots/metrics/comparison_withuncertainty_real.png")
 plt.show()
 
