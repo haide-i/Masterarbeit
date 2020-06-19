@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.neighbors import KernelDensity
+from scipy.stats import gaussian_kde
 
 
 def generate_norm_data(length, diff):
@@ -71,24 +72,37 @@ xx, yy = np.mgrid[-5:5:30j,
 xy_sample = np.vstack([yy.ravel(), xx.ravel()]).T
 print(np.shape(xy_sample))
 print(xy_sample)
-dens_sample = np.vstack((x_test1, y_test1)).T
+dens_sample = np.vstack((x_test1, y_test1))
 print(np.shape(dens_sample))
 
 xgrid = np.linspace(-5, 5, 30)
 ygrid = np.linspace(0, 0.003, 30)
 Xgrid, Ygrid = np.meshgrid(xgrid, ygrid)
-print(Xgrid)
 
-log_dens = kernel_estimator(dens_sample, xy_sample, 0.2)
+
+# +
+kde = gaussian_kde(dens_sample)
+Z = kde.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
+
+log_dens = kernel_estimator(dens_sample.T, np.vstack([Xgrid.ravel(), Ygrid.ravel()]).T, 0.2)
 dens = np.exp(log_dens)
-print(np.shape(log_dens))
-print(dens)
 
-plt.imshow(dens.reshape(xx.shape),
+# -
+
+plt.imshow(Z.reshape(Xgrid.shape),
            origin='lower', aspect='auto',
-           extent=[-5, 5, 0, 0.003],
+           extent=[np.min(x_test1), np.max(x_test1), np.min(y_test1), np.max(y_test1)],
            cmap='Blues')
+cb = plt.colorbar()
+cb.set_label("density")
+plt.savefig("./plots/metrics/gaussian_kernel_scipy_heteroscedastic.png")
 
-
+plt.imshow(dens.reshape(Xgrid.shape),
+           origin='lower', aspect='auto',
+           extent=[np.min(x_test1), np.max(x_test1), np.min(y_test1), np.max(y_test1)],
+           cmap='Blues')
+cb = plt.colorbar()
+cb.set_label("density")
+plt.savefig("./plots/metrics/gaussian_kernel_sklearn_heteroscedastic.png")
 
 
