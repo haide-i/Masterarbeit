@@ -49,8 +49,8 @@ x, y = generate_norm_data(750, 3)
 
 
 # +
-x1, y1 = generate_norm_data(750, 3)
-x2, y2 = generate_norm_data(750, 3)
+x1, y1 = generate_norm_data(450, 3)
+x2, y2 = generate_norm_data(450, 3)
 x3, y3 = generate_norm_data(750, 7)
 x4, y4 = generate_norm_data(750, 7)
 
@@ -58,7 +58,8 @@ x_test1 = np.concatenate((x1, x2))
 y_test1 = np.concatenate((y1, y2))
 x_test2 = np.concatenate((x3, x4))
 y_test2 = np.concatenate((y3, y4))
-
+print(np.shape(x_test1))
+print(np.shape(y_test1))
 # -
 
 h1, xedges, yedges, image = plt.hist2d(x_test1, y_test1, bins = (30, 30), norm = matplotlib.colors.PowerNorm(0.3))
@@ -70,7 +71,24 @@ xx, yy = np.mgrid[-5:5:30j,
 xy_sample = np.vstack([yy.ravel(), xx.ravel()]).T
 print(np.shape(xy_sample))
 print(xy_sample)
+dens_sample = np.vstack((x_test1, y_test1)).T
+print(np.shape(dens_sample))
 
-log_dens = kernel_estimator(h1, xy_sample, 0.2)
+xgrid = np.linspace(-5, 5, 30)
+ygrid = np.linspace(0, 0.003, 30)
+Xgrid, Ygrid = np.meshgrid(xgrid, ygrid)
+print(Xgrid)
+
+log_dens = kernel_estimator(dens_sample, xy_sample, 0.2)
+dens = np.exp(log_dens)
+print(np.shape(log_dens))
+print(dens)
+
+plt.imshow(dens.reshape(xx.shape),
+           origin='lower', aspect='auto',
+           extent=[-5, 5, 0, 0.003],
+           cmap='Blues')
+
+
 
 
