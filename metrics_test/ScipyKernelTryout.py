@@ -30,7 +30,10 @@ print(X[:, 0])
 kde = KernelDensity(kernel='gaussian', bandwidth=0.75).fit(X)
 log_dens = kde.score_samples(X_plot)
 
-print(X_plot[:, 0])
+# +
+
 plt.fill(X_plot[:, 0], np.exp(log_dens), fc='#AAAAFF')
+plt.show()
+# -
 
 

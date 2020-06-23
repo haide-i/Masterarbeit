@@ -18,6 +18,8 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib
 from mpl_toolkits.mplot3d import Axes3D
+from ekp_style import set_ekp_style
+set_ekp_style(set_sizes=True, set_background=True, set_colors=True)
 
 
 def generate_data(length, diff):
