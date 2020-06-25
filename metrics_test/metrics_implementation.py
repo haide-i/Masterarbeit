@@ -17,6 +17,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
 from scipy.stats import wasserstein_distance
 import torch
 import torchvision 
@@ -57,9 +58,17 @@ def test_data(val_data, net):
 
 # -
 
-def generate_data():
-    x = np.arange(-5, 5, 0.1)
+def generate_data(length):
+    x = np.linspace(-5, 5, length)
     y = 7*np.sin(x) + 3*abs(np.cos(x/2))*np.random.randn(len(x))
+    return x, y
+
+
+def generate_rand_data(length, diff):
+    x = np.linspace(-5, 5, 1000)
+    random_ints = np.random.randint(0, len(x), length)
+    x = x[random_ints]
+    y = 7*np.sin(x) + diff*abs(np.cos(x/2))*np.random.randn(len(x))
     return x, y
 
 
@@ -91,6 +100,7 @@ def kolmogorov_metric(y1, y2):
 
 
 def separation_distance(y1, y2):
+    
     return(np.max(1-y1/y2))
 
 
@@ -101,6 +111,65 @@ def total_variation(y1, y2):
 def chi_squared(y1, y2):
     return 0.5*np.sum((y1-y2)**2/(y1+y2))
 
+
+# +
+net = Net()
+net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
+net.eval()
+kl_distance = []
+hellinger = []
+kolmogorov = []
+separation = []
+totvar = []
+chisquare = []
+wasserstein = []
+for i in range(1000):
+    x1, y = generate_rand_data(500, 3)
+    predictions = []
+    data_pred = np.transpose(np.vstack((x1, np.random.randn(len(x1)))))
+    data_pred_torch = torch.from_numpy(data_pred).float()
+    for data in data_pred_torch:
+        predictions.append(test_data(data, net))
+    predictions = np.asarray(predictions)
+    y = normalize_it(y)
+    predictions = normalize_it(predictions)
+    kl_distance.append(kullback_leibler(predictions, y))
+    hellinger.append(hellinger_distance(predictions, y))
+    kolmogorov.append(kolmogorov_metric(predictions, y))
+    separation.append(separation_distance(predictions, y))
+    totvar.append(total_variation(predictions, y))
+    chisquare.append(chi_squared(predictions, y))
+    wasserstein.append(wasserstein_distance(predictions, y))
+    
+df = pd.DataFrame({"Kullback-Leibler" : kl_distance, "Hellinger" : hellinger, "Kolmogorov" : kolmogorov, 
+                   "Separation" : separation, "Total variation" : totvar, "Chi-squared" : chisquare,
+                  "Wasserstein" : wasserstein})
+df.to_csv("./data/metrics/1Dmetrics_samedist_1000repeats.csv", index=False)
+plt.hist(kl_distance)
+plt.title("Kullback-Leibler")
+plt.savefig("./plots/metrics/1D/kullbackleibler_samedist.png")
+plt.show()
+plt.hist(hellinger)
+plt.title("Hellinger")
+plt.savefig("./plots/metrics/1D/hellinger_samedist.png")
+plt.show()
+plt.hist(kolmogorov)
+plt.title("Kolmogorov")
+plt.savefig("./plots/metrics/1D/kolmogorov_samedist.png")
+plt.show()
+plt.hist(totvar)
+plt.title("Total variation")
+plt.savefig("./plots/metrics/1D/totvar_samedist.png")
+plt.show()
+plt.hist(chisquare)
+plt.title("Chi-squared")
+plt.savefig("./plots/metrics/1D/chisquared_samedist.png")
+plt.show()
+plt.hist(wasserstein)
+plt.title("Wasserstein")
+plt.savefig("./plots/metrics/1D/wasserstein_samedist.png")
+plt.show()
+# -
 
 x1, y1 = load_data(0)
 y1 = normalize_it(y1)
