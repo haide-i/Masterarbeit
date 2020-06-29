@@ -31,7 +31,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 
 # +
-class Net(nn.Module):
+class Net(nn.Module): #load trained NN to generate heteroscedastic data
     def __init__(self):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(2, 20)
@@ -61,14 +61,28 @@ def test_data(val_data, net):
 def generate_data(length):
     x = np.linspace(-5, 5, length)
     y = 7*np.sin(x) + 3*abs(np.cos(x/2))*np.random.randn(len(x))
+    y = y + abs(np.min(y))
+    y = y/np.sum(y)
     return x, y
 
 
-def generate_rand_data(length, diff):
+def generate_func_data(length): #generate data with random distributed x-values but y-values without errors
     x = np.linspace(-5, 5, 1000)
     random_ints = np.random.randint(0, len(x), length)
     x = x[random_ints]
-    y = 7*np.sin(x) + diff*abs(np.cos(x/2))*np.random.randn(len(x))
+    y = 7*np.sin(x)
+    y = y + abs(np.min(y))
+    y = y/np.sum(y)
+    return x, y
+
+
+def generate_rand_data(length, diff, change): #generate data with random distributed x-values and heteroscedastic y-values
+    x = np.linspace(-5, 5, 1000)
+    random_ints = np.random.randint(0, len(x), length)
+    x = x[random_ints]
+    y = change*np.sin(x) + diff*abs(np.cos(x/2))*np.random.randn(len(x))
+    y = y + abs(np.min(y))
+    y = y/np.sum(y)
     return x, y
 
 
@@ -82,6 +96,9 @@ def load_data(nr):
     x, y = np.loadtxt("./data/paper_heteroscedastic_data_test_{}.txt".format(nr))
     return x,y
 
+
+# # Metrics
+# Implementation of different metrics to compare one-dimensional distributions. Not all distance measurements used here are metrics, as for example the Kullback-Leibler divergence is not symmetric. In case of the KL divergence all points with measurement 0 are not taken into account. Distance measurements used here are the KL divergence, the Hellinger distance, The Kolmogorov-Smirnov metric, the total variation distance, the $\chi^2$-distance and the Wasserstein metric (from scipy).
 
 def kullback_leibler(x1, x2):
     D_KL= 0
@@ -112,6 +129,10 @@ def chi_squared(y1, y2):
     return 0.5*np.sum((y1-y2)**2/(y1+y2))
 
 
+# To compare different one-dimensional distributions, we generate data following the heteroscedastic function 
+# $y = 7 \sin(x) + 3 |\cos(x/2)| \cdot \epsilon$ with $\epsilon\in\mathcal(0,1)$ .
+# To try to quantify the output of the different distance measurements, the distance between the real heteroscedastic data and the output of the neural network is compared as well as the distance between the underlying functions without errors, $y = 7\sin(x)$, to the heteroscedastic data and the predicted data.  
+
 # +
 net = Net()
 net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
@@ -119,55 +140,83 @@ net.eval()
 kl_distance = []
 hellinger = []
 kolmogorov = []
-separation = []
 totvar = []
 chisquare = []
 wasserstein = []
-for i in range(1000):
-    x1, y = generate_rand_data(500, 3)
-    predictions = []
-    data_pred = np.transpose(np.vstack((x1, np.random.randn(len(x1)))))
-    data_pred_torch = torch.from_numpy(data_pred).float()
-    for data in data_pred_torch:
-        predictions.append(test_data(data, net))
-    predictions = np.asarray(predictions)
-    y = normalize_it(y)
-    predictions = normalize_it(predictions)
-    kl_distance.append(kullback_leibler(predictions, y))
-    hellinger.append(hellinger_distance(predictions, y))
-    kolmogorov.append(kolmogorov_metric(predictions, y))
-    separation.append(separation_distance(predictions, y))
-    totvar.append(total_variation(predictions, y))
-    chisquare.append(chi_squared(predictions, y))
-    wasserstein.append(wasserstein_distance(predictions, y))
+kl_distance_real = []
+hellinger_real = []
+kolmogorov_real = []
+totvar_real = []
+chisquare_real = []
+wasserstein_real = []
+#comparison between 1D histograms 1000 times to get distance measurement distribution
+for i in range(5000):
+    x_dist, y_dist = generate_rand_data(500, 3, 7) #generate heteroscedastic data
+    x_func, y_func = generate_rand_data(500, 3, 4) 
+    x_dist2, y_dist2 = generate_rand_data(500, 3, 7)
+    #predictions = []
+    #data_pred = np.transpose(np.vstack((x_func, np.random.randn(len(x_func)))))
+    #data_pred_torch = torch.from_numpy(data_pred).float()
+    #for data in data_pred_torch:
+    #    predictions.append(test_data(data, net)) #generate predictions of the network
+    #predictions = np.asarray(predictions)
+    #predictions = normalize_it(predictions)
+    kl_distance_real.append(kullback_leibler(y_func, y_dist))
+    hellinger_real.append(hellinger_distance(y_func, y_dist))
+    kolmogorov_real.append(kolmogorov_metric(y_func, y_dist))
+    totvar_real.append(total_variation(y_func, y_dist))
+    chisquare_real.append(chi_squared(y_func, y_dist))
+    wasserstein_real.append(wasserstein_distance(y_func, y_dist))
+    kl_distance.append(kullback_leibler(y_dist2, y_dist))
+    hellinger.append(hellinger_distance(y_dist2, y_dist))
+    kolmogorov.append(kolmogorov_metric(y_dist2, y_dist))
+    totvar.append(total_variation(y_dist2, y_dist))
+    chisquare.append(chi_squared(y_dist2, y_dist))
+    wasserstein.append(wasserstein_distance(y_dist2, y_dist))
     
 df = pd.DataFrame({"Kullback-Leibler" : kl_distance, "Hellinger" : hellinger, "Kolmogorov" : kolmogorov, 
-                   "Separation" : separation, "Total variation" : totvar, "Chi-squared" : chisquare,
+                   "Total variation" : totvar, "Chi-squared" : chisquare,
                   "Wasserstein" : wasserstein})
-df.to_csv("./data/metrics/1Dmetrics_samedist_1000repeats.csv", index=False)
-plt.hist(kl_distance)
+df.to_csv("./data/metrics/1Dmetrics_samedist_5000repeats.csv", index=False)
+df2 = pd.DataFrame({"Kullback-Leibler" : kl_distance_real, "Hellinger" : hellinger_real, 
+                    "Kolmogorov" : kolmogorov_real, "Total variation" : totvar_real, "Chi-squared" : chisquare_real,
+                  "Wasserstein" : wasserstein_real})
+df.to_csv("./data/metrics/1Dmetrics_change47_5000repeats.csv", index=False)
+plt.hist(kl_distance, bins=20, alpha = 0.5, label = "Function - Prediction")
+plt.hist(kl_distance_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
 plt.title("Kullback-Leibler")
-plt.savefig("./plots/metrics/1D/kullbackleibler_samedist.png")
+plt.legend()
+plt.savefig("./plots/metrics/1D/kullbackleibler_change47.png")
 plt.show()
-plt.hist(hellinger)
+plt.hist(hellinger, bins=20, alpha = 0.5, label = "Same distribution")
+plt.hist(hellinger_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
 plt.title("Hellinger")
-plt.savefig("./plots/metrics/1D/hellinger_samedist.png")
+plt.legend()
+plt.savefig("./plots/metrics/1D/hellinger_change47.png")
 plt.show()
-plt.hist(kolmogorov)
+plt.hist(kolmogorov, bins=20, alpha = 0.5, label = "Same distribution")
+plt.hist(kolmogorov_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
 plt.title("Kolmogorov")
-plt.savefig("./plots/metrics/1D/kolmogorov_samedist.png")
+plt.legend()
+plt.savefig("./plots/metrics/1D/kolmogorov_change47.png")
 plt.show()
-plt.hist(totvar)
+plt.hist(totvar, bins=20, alpha = 0.5, label = "Same distribution")
+plt.hist(totvar_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
 plt.title("Total variation")
-plt.savefig("./plots/metrics/1D/totvar_samedist.png")
+plt.legend()
+plt.savefig("./plots/metrics/1D/totvar_change47.png")
 plt.show()
-plt.hist(chisquare)
+plt.hist(chisquare, bins=20, alpha = 0.5, label = "Same distribution")
+plt.hist(chisquare_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
 plt.title("Chi-squared")
-plt.savefig("./plots/metrics/1D/chisquared_samedist.png")
+plt.legend()
+plt.savefig("./plots/metrics/1D/chisquared_change47.png")
 plt.show()
-plt.hist(wasserstein)
+plt.hist(wasserstein, bins=20, alpha = 0.5, label = "Same distributionn")
+plt.hist(wasserstein_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
 plt.title("Wasserstein")
-plt.savefig("./plots/metrics/1D/wasserstein_samedist.png")
+plt.legend()
+plt.savefig("./plots/metrics/1D/wasserstein_change47.png")
 plt.show()
 # -
 
@@ -183,6 +232,11 @@ y4 = normalize_it(y4)
 
 real_x = np.arange(-5, 5, 0.1)
 real_y =  7*np.sin(real_x) + 3*abs(np.cos(real_x/2))
+x_func, y_func = generate_rand_data(500, 3, 1) 
+x_dist2, y_dist2 = generate_rand_data(500, 3, 7)
+plt.plot(x_func, y_func, '.b')
+plt.plot(x_dist2, y_dist2, '.r')
+plt.show()
 
 net = Net()
 net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
@@ -218,39 +272,3 @@ plt.plot(data_pred1, normalize_it(real_y), 'r', label='Function')
 plt.legend(loc='upper right')
 plt.savefig("./plots/metrics/comparison_withuncertainty_real.png")
 plt.show()
-
-# +
-predictions = normalize_it(predictions)
-real_y = normalize_it(real_y)
-predictions2 = normalize_it(predictions2)
-y = normalize_it(y)
-
-
-print(kullback_leibler(predictions, real_y))
-print(kullback_leibler(predictions2, real_y))
-print(kullback_leibler(y, real_y))
-# -
-
-print(wasserstein_distance(predictions, real_y))
-print(wasserstein_distance(predictions2, real_y))
-print(wasserstein_distance(y, real_y))
-
-print(hellinger_distance(predictions, real_y))
-print(hellinger_distance(predictions2, real_y))
-print(hellinger_distance(y, real_y))
-
-print(kolmogorov_metric(predictions, real_y))
-print(kolmogorov_metric(predictions2, real_y))
-print(kolmogorov_metric(y, real_y))
-
-print(separation_distance(predictions, real_y))
-print(separation_distance(predictions2, real_y))
-print(separation_distance(y, real_y))
-
-print(total_variation(predictions, real_y))
-print(total_variation(predictions2, real_y))
-print(total_variation(y, real_y))
-
-print(chi_squared(predictions, real_y))
-print(chi_squared(predictions2, real_y))
-print(chi_squared(y, real_y))
