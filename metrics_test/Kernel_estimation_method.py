@@ -144,12 +144,12 @@ def make_F(log_dens_D, log_dens_D_star, log_dens_D_aver, plot=False): #compute F
 
 # -
 
-ks_dist = []
-ks_real = []
 repeats = 100
 change1 = 7
 change2 = 5
 for j in range(5): #make difference between datasets higher
+    ks_dist = []
+    ks_real = []
     for i in range(repeats): #repeat calculations to get distance measure distribution
         x1, y1 = generate_norm_data(450, change1) #generate heteroscedastic dataset several times to be able to
         x2, y2 = generate_norm_data(450, change1) #compute a 2D histogram
