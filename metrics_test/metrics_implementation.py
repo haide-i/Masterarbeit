@@ -28,6 +28,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
+from ekp_style import set_ekp_style
+set_ekp_style(set_sizes=True, set_background=True, set_colors=True)
 
 
 # +
@@ -82,7 +84,7 @@ def generate_rand_data(length, diff, change): #generate data with random distrib
     x = x[random_ints]
     y = change*np.sin(x) + diff*abs(np.cos(x/2))*np.random.randn(len(x))
     y = y + abs(np.min(y))
-    y = y/np.sum(y)
+    #y = y/np.sum(y)
     return x, y
 
 
@@ -126,7 +128,11 @@ def total_variation(y1, y2):
 
 
 def chi_squared(y1, y2):
-    return 0.5*np.sum((y1-y2)**2/(y1+y2))
+    cs_sum = 0
+    for i in range(len(y1)):
+        if y1[i] != 0 and y2[i] != 0:
+            cs_sum += (y1[i]-y2[i])**2/(y1[i]+y2[i])
+    return 0.5*cs_sum
 
 
 # To compare different one-dimensional distributions, we generate data following the heteroscedastic function 
@@ -137,23 +143,45 @@ def chi_squared(y1, y2):
 net = Net()
 net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
 net.eval()
-kl_distance = []
-hellinger = []
-kolmogorov = []
-totvar = []
-chisquare = []
-wasserstein = []
-kl_distance_real = []
-hellinger_real = []
-kolmogorov_real = []
-totvar_real = []
-chisquare_real = []
-wasserstein_real = []
+repeats = 5000
+kl_df = pd.DataFrame(columns = ['1sin', '2sin', '3sin', '4sin', '5sin', '6sin', '7sin'])
+hd_df = pd.DataFrame(columns = ['1sin', '2sin', '3sin', '4sin', '5sin', '6sin', '7sin'])
+k_df = pd.DataFrame(columns = ['1sin', '2sin', '3sin', '4sin', '5sin', '6sin', '7sin'])
+tv_df = pd.DataFrame(columns = ['1sin', '2sin', '3sin', '4sin', '5sin', '6sin', '7sin'])
+cs_df = pd.DataFrame(columns = ['1sin', '2sin', '3sin', '4sin', '5sin', '6sin', '7sin'])
+w_df = pd.DataFrame(columns = ['1sin', '2sin', '3sin', '4sin', '5sin', '6sin', '7sin'])
+
 #comparison between 1D histograms 1000 times to get distance measurement distribution
-for i in range(5000):
-    x_dist, y_dist = generate_rand_data(500, 3, 7) #generate heteroscedastic data
-    x_func, y_func = generate_rand_data(500, 3, 4) 
-    x_dist2, y_dist2 = generate_rand_data(500, 3, 7)
+for j in range(1, 8):
+    changekl = []
+    changehd = []
+    changek = []
+    changetv = []
+    changecs = []
+    changew = []
+    for i in range(repeats):
+        x_dist, y_dist = generate_rand_data(500, 3, 7) #generate heteroscedastic data
+        x_dist2, y_dist2 = generate_rand_data(500, 3, j) 
+        changekl.append(kullback_leibler(y_dist, y_dist2))
+        changehd.append(hellinger_distance(y_dist, y_dist2))
+        changek.append(kolmogorov_metric(y_dist, y_dist2))
+        changetv.append(total_variation(y_dist, y_dist2))
+        changecs.append(chi_squared(y_dist, y_dist2))
+        changew.append(wasserstein_distance(y_dist, y_dist2))
+    kl_df['{}sin'.format(j)] = changekl
+    hd_df['{}sin'.format(j)] = changehd
+    k_df['{}sin'.format(j)] = changek
+    tv_df['{}sin'.format(j)] = changetv
+    cs_df['{}sin'.format(j)] = changecs
+    w_df['{}sin'.format(j)] = changew
+kl_df.to_csv("./data/metrics/Kullback_Leibler_{}repeats_range1_7.csv".format(repeats), index=False)
+hd_df.to_csv("./data/metrics/Hellinger_distance_{}repeats_range1_7.csv".format(repeats), index=False)
+k_df.to_csv("./data/metrics/Kolmogorov_{}repeats_range1_7.csv".format(repeats), index=False)
+tv_df.to_csv("./data/metrics/Total_Variation_{}repeats_range1_7.csv".format(repeats), index=False)
+cs_df.to_csv("./data/metrics/Chi_squared_{}repeats_range1_7.csv".format(repeats), index=False)
+w_df.to_csv("./data/metrics/Wasserstein_{}repeats_range1_7.csv".format(repeats), index=False)
+
+
     #predictions = []
     #data_pred = np.transpose(np.vstack((x_func, np.random.randn(len(x_func)))))
     #data_pred_torch = torch.from_numpy(data_pred).float()
@@ -161,114 +189,47 @@ for i in range(5000):
     #    predictions.append(test_data(data, net)) #generate predictions of the network
     #predictions = np.asarray(predictions)
     #predictions = normalize_it(predictions)
-    kl_distance_real.append(kullback_leibler(y_func, y_dist))
-    hellinger_real.append(hellinger_distance(y_func, y_dist))
-    kolmogorov_real.append(kolmogorov_metric(y_func, y_dist))
-    totvar_real.append(total_variation(y_func, y_dist))
-    chisquare_real.append(chi_squared(y_func, y_dist))
-    wasserstein_real.append(wasserstein_distance(y_func, y_dist))
-    kl_distance.append(kullback_leibler(y_dist2, y_dist))
-    hellinger.append(hellinger_distance(y_dist2, y_dist))
-    kolmogorov.append(kolmogorov_metric(y_dist2, y_dist))
-    totvar.append(total_variation(y_dist2, y_dist))
-    chisquare.append(chi_squared(y_dist2, y_dist))
-    wasserstein.append(wasserstein_distance(y_dist2, y_dist))
-    
-df = pd.DataFrame({"Kullback-Leibler" : kl_distance, "Hellinger" : hellinger, "Kolmogorov" : kolmogorov, 
-                   "Total variation" : totvar, "Chi-squared" : chisquare,
-                  "Wasserstein" : wasserstein})
-df.to_csv("./data/metrics/1Dmetrics_samedist_5000repeats.csv", index=False)
-df2 = pd.DataFrame({"Kullback-Leibler" : kl_distance_real, "Hellinger" : hellinger_real, 
-                    "Kolmogorov" : kolmogorov_real, "Total variation" : totvar_real, "Chi-squared" : chisquare_real,
-                  "Wasserstein" : wasserstein_real})
-df.to_csv("./data/metrics/1Dmetrics_change47_5000repeats.csv", index=False)
-plt.hist(kl_distance, bins=20, alpha = 0.5, label = "Function - Prediction")
-plt.hist(kl_distance_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
-plt.title("Kullback-Leibler")
-plt.legend()
-plt.savefig("./plots/metrics/1D/kullbackleibler_change47.png")
-plt.show()
-plt.hist(hellinger, bins=20, alpha = 0.5, label = "Same distribution")
-plt.hist(hellinger_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
-plt.title("Hellinger")
-plt.legend()
-plt.savefig("./plots/metrics/1D/hellinger_change47.png")
-plt.show()
-plt.hist(kolmogorov, bins=20, alpha = 0.5, label = "Same distribution")
-plt.hist(kolmogorov_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
-plt.title("Kolmogorov")
-plt.legend()
-plt.savefig("./plots/metrics/1D/kolmogorov_change47.png")
-plt.show()
-plt.hist(totvar, bins=20, alpha = 0.5, label = "Same distribution")
-plt.hist(totvar_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
-plt.title("Total variation")
-plt.legend()
-plt.savefig("./plots/metrics/1D/totvar_change47.png")
-plt.show()
-plt.hist(chisquare, bins=20, alpha = 0.5, label = "Same distribution")
-plt.hist(chisquare_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
-plt.title("Chi-squared")
-plt.legend()
-plt.savefig("./plots/metrics/1D/chisquared_change47.png")
-plt.show()
-plt.hist(wasserstein, bins=20, alpha = 0.5, label = "Same distributionn")
-plt.hist(wasserstein_real, bins=20, alpha = 0.5, label = "7sin(x) - 4sin(x)")
-plt.title("Wasserstein")
-plt.legend()
-plt.savefig("./plots/metrics/1D/wasserstein_change47.png")
-plt.show()
 # -
 
-x1, y1 = load_data(0)
-y1 = normalize_it(y1)
-print(np.min(y1))
-x2, y2 = load_data(0)
-y2 = normalize_it(y2)
-x3, y3 = load_data(0)
-y3 = normalize_it(y3)
-x4, y4 = load_data(0)
-y4 = normalize_it(y4)
-
-real_x = np.arange(-5, 5, 0.1)
-real_y =  7*np.sin(real_x) + 3*abs(np.cos(real_x/2))
-x_func, y_func = generate_rand_data(500, 3, 1) 
-x_dist2, y_dist2 = generate_rand_data(500, 3, 7)
-plt.plot(x_func, y_func, '.b')
-plt.plot(x_dist2, y_dist2, '.r')
+for j in range(1, 8):
+    mean = np.round(np.mean(np.asarray(kl_df['{}sin'.format(j)])), 3)
+    plt.hist(kl_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
+plt.title("Kullback-Leibler distance")
+plt.legend()
+plt.savefig('./plots/metrics/1D/kullbackleibler_{}repeats_allchange1_7.png'.format(repeats))
 plt.show()
-
-net = Net()
-net.load_state_dict(torch.load('./weights/heteroscedastic/3layer_epochs_5000_withdropout.pt'))
-net.eval()
-
-data_pred1, test = generate_data()
-data_pred = np.transpose(np.vstack((data_pred1, np.random.randn(len(data_pred1)))))
-data_pred_torch = torch.from_numpy(data_pred).float()
-predictions = []
-for data in data_pred_torch:
-    predictions.append(test_data(data, net))
-predictions = np.asarray(predictions)
-plt.plot(data_pred1, normalize_it(real_y))
-plt.plot(data_pred1, normalize_it(predictions), '.b', label = "Predicted Data")
+for j in range(1, 8):
+    mean = np.round(np.mean(np.asarray(hd_df['{}sin'.format(j)])), 3)               
+    plt.hist(hd_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
+plt.title("Hellinger distance")
+plt.legend()
+plt.savefig('./plots/metrics/1D/hellingerdistance_{}repeats_allchange1_7.png'.format(repeats))
 plt.show()
-
-data_pred2, y = generate_data()
-data_pred = np.transpose(np.vstack((data_pred2, np.random.randn(len(data_pred2)))))
-data_pred_torch = torch.from_numpy(data_pred).float()
-predictions2 = []
-for data in data_pred_torch:
-    predictions2.append(test_data(data, net))
-predictions2 = np.asarray(predictions2)
-plt.plot(data_pred1, normalize_it(real_y), 'r', label='Function')
-plt.plot(data_pred2, normalize_it(predictions2), '.b', label = "Predicted Data")
-#plt.plot(data_pred2, normalize_it(y), '+g', label = 'With uncertainty')
-plt.legend(loc='upper right')
-plt.savefig("./plots/metrics/comparison_pred_real.png")
+for j in range(1, 8):
+    mean = np.round(np.mean(np.asarray(k_df['{}sin'.format(j)])), 3)
+    plt.hist(k_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
+plt.title("Kolmogorov distance")
+plt.legend()
+plt.savefig('./plots/metrics/1D/kolmogorov_{}repeats_allchange1_7.png'.format(repeats))
 plt.show()
-
-plt.plot(data_pred2, normalize_it(y), '.b', label = 'With uncertainty')
-plt.plot(data_pred1, normalize_it(real_y), 'r', label='Function')
-plt.legend(loc='upper right')
-plt.savefig("./plots/metrics/comparison_withuncertainty_real.png")
+for j in range(1, 8):
+    mean = np.round(np.mean(np.asarray(tv_df['{}sin'.format(j)])), 3)
+    plt.hist(tv_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
+plt.title("Total variation distance")
+plt.legend()
+plt.savefig('./plots/metrics/1D/totalvariation_{}repeats_allchange1_7.png'.format(repeats))
+plt.show()
+for j in range(1, 8):
+    mean = np.round(np.mean(np.asarray(cs_df['{}sin'.format(j)])), 3)
+    plt.hist(cs_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
+plt.title("Chi-squared distance")
+plt.legend()
+plt.savefig('./plots/metrics/1D/chisquared_{}repeats_allchange1_7.png'.format(repeats))
+plt.show()
+for j in range(1, 8):
+    mean = np.round(np.mean(np.asarray(w_df['{}sin'.format(j)])), 3)
+    plt.hist(w_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
+plt.title("Wasserstein distance")
+plt.legend()
+plt.savefig('./plots/metrics/1D/wasserstein_{}repeats_allchange1_7.png'.format(repeats))
 plt.show()

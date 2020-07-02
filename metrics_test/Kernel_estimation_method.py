@@ -169,6 +169,5 @@ for j in range(5): #make difference between datasets higher
         _, _, _, ks_d, ks_d_star = make_F(log_dens_D, log_dens_D_star, log_dens_D_aver, plot = False)
         ks_dist.append(ks_d)
         ks_real.append(ks_d_star)
-        print(i)
     df = pd.DataFrame({"F - <F*>": ks_dist, "F* - <F*>": ks_real})
     df.to_csv("./data/metrics/2Dmetrics_changedist_{}repeats_change{}_{}.csv".format(repeats, change1, j), index=False)
