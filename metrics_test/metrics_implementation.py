@@ -191,45 +191,51 @@ w_df.to_csv("./data/metrics/Wasserstein_{}repeats_range1_7.csv".format(repeats),
     #predictions = normalize_it(predictions)
 # -
 
-for j in range(1, 8):
+plt.figure(figsize=(10,7))
+for j in (1, 3, 5):
     mean = np.round(np.mean(np.asarray(kl_df['{}sin'.format(j)])), 3)
     plt.hist(kl_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
 plt.title("Kullback-Leibler distance")
 plt.legend()
-plt.savefig('./plots/metrics/1D/kullbackleibler_{}repeats_allchange1_7.png'.format(repeats))
+plt.savefig('./plots/metrics/1D/kullbackleibler_{}repeats_change1_3_5.pdf'.format(repeats))
 plt.show()
-for j in range(1, 8):
+plt.figure(figsize=(10,7))
+for j in (1, 3, 5):
     mean = np.round(np.mean(np.asarray(hd_df['{}sin'.format(j)])), 3)               
     plt.hist(hd_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
 plt.title("Hellinger distance")
 plt.legend()
-plt.savefig('./plots/metrics/1D/hellingerdistance_{}repeats_allchange1_7.png'.format(repeats))
+plt.savefig('./plots/metrics/1D/hellingerdistance_{}repeats_change1_3_5.pdf'.format(repeats))
 plt.show()
-for j in range(1, 8):
+plt.figure(figsize=(10,7))
+for j in (1, 3, 5):
     mean = np.round(np.mean(np.asarray(k_df['{}sin'.format(j)])), 3)
     plt.hist(k_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
 plt.title("Kolmogorov distance")
 plt.legend()
-plt.savefig('./plots/metrics/1D/kolmogorov_{}repeats_allchange1_7.png'.format(repeats))
+plt.savefig('./plots/metrics/1D/kolmogorov_{}repeats_change1_3_5.pdf'.format(repeats))
 plt.show()
-for j in range(1, 8):
+plt.figure(figsize=(10,7))
+for j in (1, 3, 5):
     mean = np.round(np.mean(np.asarray(tv_df['{}sin'.format(j)])), 3)
     plt.hist(tv_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
 plt.title("Total variation distance")
 plt.legend()
-plt.savefig('./plots/metrics/1D/totalvariation_{}repeats_allchange1_7.png'.format(repeats))
+plt.savefig('./plots/metrics/1D/totalvariation_{}repeats_change1_3_5.pdf'.format(repeats))
 plt.show()
-for j in range(1, 8):
+plt.figure(figsize=(10,7))
+for j in (1, 3, 5):
     mean = np.round(np.mean(np.asarray(cs_df['{}sin'.format(j)])), 3)
     plt.hist(cs_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
 plt.title("Chi-squared distance")
 plt.legend()
-plt.savefig('./plots/metrics/1D/chisquared_{}repeats_allchange1_7.png'.format(repeats))
+plt.savefig('./plots/metrics/1D/chisquared_{}repeats_change1_3_5.pdf'.format(repeats))
 plt.show()
-for j in range(1, 8):
+plt.figure(figsize=(10,7))
+for j in (1, 3, 5):
     mean = np.round(np.mean(np.asarray(w_df['{}sin'.format(j)])), 3)
     plt.hist(w_df['{}sin'.format(j)], label='{}: {}'.format(j, mean))
 plt.title("Wasserstein distance")
 plt.legend()
-plt.savefig('./plots/metrics/1D/wasserstein_{}repeats_allchange1_7.png'.format(repeats))
+plt.savefig('./plots/metrics/1D/wasserstein_{}repeats_change1_3_5.pdf'.format(repeats))
 plt.show()
