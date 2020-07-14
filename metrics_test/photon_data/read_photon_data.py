@@ -19,10 +19,10 @@ import os
 import gzip
 import pandas as pd
 import matplotlib.pyplot as plt
-
 home = os.getenv("HOME")
+
 filename1 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_99.h5"
-filename2 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_1.h5"
+filename2 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_3.h5"
 
 f = h5.File(filename1, 'r')
 df = pd.read_hdf(filename1)
@@ -142,3 +142,34 @@ for j in event_arr:
         plt.savefig("./plots/photons/DetectedTime.pdf")
         plt.show()
 
+
+# +
+from mpl_toolkits.mplot3d import Axes3D
+
+
+fig = plt.figure(figsize=(20, 2.5))
+#ax = fig.gca(projection='3d')
+#ax.set_xlabel('x')
+#ax.set_ylabel('y')
+inside_nbr = 0
+total = 0
+#for i in range(1, 7):
+filename = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_{}.h5".format(2)
+df = pd.read_hdf(filename)
+event_arr = np.arange(df["evt_idx"].min(axis=0), df["evt_idx"].max(axis=0))
+for j in event_arr:
+    event = df[(df.evt_idx == j)]
+    prod_x = event.production_x
+    prod_y = event.production_y
+    prod_z = event.production_z
+    det_x = event.detection_pixel_x
+    det_y = event.detection_pixel_y
+    if (abs(prod_y.mean(axis=0)) <= 10.) & (abs(prod_x.mean(axis=0)) <= 50.):
+        inside_nbr += 1
+        #ax.scatter(prod_x, prod_y, prod_z)
+    plt.plot(det_x, det_y, '.b')
+    total += 1
+print(total)
+print(inside_nbr)
+print("ratio = ", float(total)/inside_nbr)
+plt.show()
