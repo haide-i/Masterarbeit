@@ -27,9 +27,13 @@ for i in file_nbr:
     df = pd.read_hdf(dirname+'photons_100x1E5_randpos_randdir_mod5_{}.h5'.format(i))
     clean_photons = df[df.detection_time >= 0]
     clean_photons.sort_values(by=['production_x'], inplace = True)
-    new_df = df.round(3)
-    new_df.reset_index(drop = True, inplace=True)
-    new_df.to_hdf(dirname+'without_non_det/clean_photons_100x1E5_randpos_randdir_mod5_{}.h5'.format(i), key = 'df')
+    clean_photons.reset_index(drop = True, inplace=True)
+    clean_photons.to_hdf(dirname+'without_non_det/clean_photons_100x1E5_randpos_randdir_mod5_{}.h5'.format(i), key = 'df')
+
+check_df = pd.read_hdf(dirname + 'without_non_det/clean_photons_100x1E5_randpos_randdir_mod5_121.h5')
+print(check_df.shape)
+check_df.head(-1)
+
 
 filenames = glob(dirname + 'without_non_det/clean_photons_100x1E5_randpos_randdir_mod5_*.h5')
 dataframes = [pd.read_hdf(f) for f in filenames]
