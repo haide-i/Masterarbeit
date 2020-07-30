@@ -24,6 +24,7 @@ from sklearn.model_selection import GridSearchCV
 import pandas as pd
 from ekp_style import set_ekp_style
 set_ekp_style(set_sizes=True, set_background=True, set_colors=True)
+import time
 
 
 # # 2D metric implementation after [this paper](https://www.slac.stanford.edu/econf/C030908/papers/WEJT001.pdf)
@@ -144,7 +145,7 @@ def make_F(log_dens_D, log_dens_D_star, log_dens_D_aver, plot=False): #compute F
 
 # -
 
-repeats = 100
+repeats = 1
 change1 = 7
 change2 = 5
 for j in range(5): #make difference between datasets higher
@@ -153,21 +154,24 @@ for j in range(5): #make difference between datasets higher
     for i in range(repeats): #repeat calculations to get distance measure distribution
         x1, y1 = generate_norm_data(450, change1) #generate heteroscedastic dataset several times to be able to
         x2, y2 = generate_norm_data(450, change1) #compute a 2D histogram
-        x3, y3 = generate_norm_data(450, j)
-        x4, y4 = generate_norm_data(450, j)
+        x3, y3 = generate_norm_data(450, 7)
+        x4, y4 = generate_norm_data(450, 7)
 
         x_test1 = np.concatenate((x1, x2))
         y_test1 = np.concatenate((y1, y2))
         x_test2 = np.concatenate((x3, x4))
         y_test2 = np.concatenate((y3, y4))
-    
+        start = time.time()
         log_dens_sample1, bandwidth_1, Xgrid_1, kde1 = kernel_estimator2d(x_test1, y_test1) #estimate the PDF of
         log_dens_sample2, bandwidth_2, Xgrid_2, kde2 = kernel_estimator2d(x_test2, y_test2) #two distributions with KDE
-        
+
         #calculate D, D*, <D*>, and F plus the distances between F and <F*> and F* and <F*>
         _, log_dens_D, _, log_dens_D_star, _, log_dens_D_aver = make_D(kde1, log_dens_sample1, log_dens_sample2, Xgrid_1, plot=False)
         _, _, _, ks_d, ks_d_star = make_F(log_dens_D, log_dens_D_star, log_dens_D_aver, plot = False)
+        end = time.time()
         ks_dist.append(ks_d)
         ks_real.append(ks_d_star)
-    df = pd.DataFrame({"F - <F*>": ks_dist, "F* - <F*>": ks_real})
-    df.to_csv("./data/metrics/2Dmetrics_changedist_{}repeats_change{}_{}.csv".format(repeats, change1, j), index=False)
+
+        df = pd.DataFrame({"F - <F*>": ks_dist, "F* - <F*>": ks_real})
+        df.to_csv("./data/metrics/2Dmetrics_changedist_{}repeats_change{}_{}.csv".format(repeats, change1, j), index=False)
+print(end - start)

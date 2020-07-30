@@ -21,6 +21,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from ekp_style import set_ekp_style
 set_ekp_style(set_sizes=True, set_background=True, set_colors=True)
 import pandas as pd
+import time
 
 
 def generate_data(length, diff):
@@ -92,27 +93,30 @@ y_test1 = np.concatenate((y1, y2))
 x_test2 = np.concatenate((x3, x4))
 y_test2 = np.concatenate((y3, y4))
 
-repeats = 100
+repeats = 1
 change1 = 7
 change2 = 5
 df = pd.DataFrame(columns = ['Kolmogorov1', 'Kolmogorov2', 'Kolmogorov3', 'Kolmogorov4', 'Kolmogorov5', 'Kolmogorov6', 'Kolmogorov7'])
-for j in range(1, 8): #make difference between datasets higher
-    k_d = []
-    for i in range(repeats): #repeat calculations to get distance measure distribution
-        x1, y1 = generate_norm_data(450, change1) #generate heteroscedastic dataset several times to be able to
-        x2, y2 = generate_norm_data(450, change1) #compute a 2D histogram
-        x3, y3 = generate_norm_data(450, j)
-        x4, y4 = generate_norm_data(450, j)
+#for j in range(1, 8): #make difference between datasets higher
+k_d = []
+for i in range(repeats): #repeat calculations to get distance measure distribution
+    x1, y1 = generate_norm_data(450, change1) #generate heteroscedastic dataset several times to be able to
+    x2, y2 = generate_norm_data(450, change1) #compute a 2D histogram
+    x3, y3 = generate_norm_data(450, 2)
+    x4, y4 = generate_norm_data(450, 2)
 
-        x_test1 = np.concatenate((x1, x2))
-        y_test1 = np.concatenate((y1, y2))
-        x_test2 = np.concatenate((x3, x4))
-        y_test2 = np.concatenate((y3, y4))
-        h1, xedges, yedges, image = plt.hist2d(x_test1, y_test1, bins = (30, 30), norm = matplotlib.colors.PowerNorm(0.3))
-        h2, xedges2, yedges2, image2 = plt.hist2d(x_test2, y_test2, bins = (30, 30), norm = matplotlib.colors.PowerNorm(0.3))
-        k_d.append(kolmogorov_2d(h1, h2, xedges, yedges))
-    df["Kolmogorov{}".format(j)] = k_d
-df.to_csv("./data/metrics/2DKolmogorov_changedist_{}repeats_change{}_{}.csv".format(repeats, change1, j), index=False)
+    x_test1 = np.concatenate((x1, x2))
+    y_test1 = np.concatenate((y1, y2))
+    x_test2 = np.concatenate((x3, x4))
+    y_test2 = np.concatenate((y3, y4))
+    h1, xedges, yedges, image = plt.hist2d(x_test1, y_test1, bins = (30, 30), norm = matplotlib.colors.PowerNorm(0.3))
+    h2, xedges2, yedges2, image2 = plt.hist2d(x_test2, y_test2, bins = (30, 30), norm = matplotlib.colors.PowerNorm(0.3))
+    start = time.time()
+    k_d.append(kolmogorov_2d(h1, h2, xedges, yedges))
+    end = time.time()
+print(end - start)
+#df["Kolmogorov{}".format(j)] = k_d
+#df.to_csv("./data/metrics/2DKolmogorov_changedist_{}repeats_change{}_{}.csv".format(repeats, change1, j), index=False)
 
 df.head()
 

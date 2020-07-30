@@ -68,34 +68,24 @@ class ndKS(object):
         stack_tens = torch.empty((2**dim, N))
         #print(nx)
         if alternative:
-            #print(ndKS.squarewave(dim[4][0], x))
+            o1 = torch.sum(torch.prod(x, dim = 1), dim=0).float() / N
+            # return the stack of octants, should be (n, 8)
+            return torch.stack([o1, o2, o3, o4, o5, o6, o7, o8], dim=1)
             for i in range(2**dim):
                 stack_tens[i] = torch.sum(ndKS.squarewave(freq[i][0], x[:, 0, :]) &  ndKS.squarewave(freq[i][1], x[:, 1, :]) &  ndKS.squarewave(freq[i][2], x[:, 2, :]), dim=0).float() / N
-            #print(stack_tens.T)
+            print(stack_tens.T)
             return(stack_tens)
         else:
-            #print(x)
-            #print(nx)
             # now use the comparisoned points to construct each octant (& is logical and)
             o1 = torch.sum( x[:, 0, :] &  x[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #print('o1: ', o1)
             o2 = torch.sum( x[:, 0, :] &  x[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #print('o2: ', o2)
             o3 = torch.sum( x[:, 0, :] & nx[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #print('o3: ', o3)
             o4 = torch.sum( x[:, 0, :] & nx[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #print('o4: ', o4)
             o5 = torch.sum(nx[:, 0, :] &  x[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #print('o5: ', o5)
             o6 = torch.sum(nx[:, 0, :] &  x[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #print('o6: ', o6)
             o7 = torch.sum(nx[:, 0, :] & nx[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #print('o7: ', o7)
             o8 = torch.sum(nx[:, 0, :] & nx[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #print('o8: ', o8)
             # return the stack of octants, should be (n, 8)
-            stack_tens = torch.stack([o1, o2, o3, o4, o5, o6, o7, o8], dim=1)
-            #print(stack_tens)
             return torch.stack([o1, o2, o3, o4, o5, o6, o7, o8], dim=1)
     
     def permute(self, J=1_000):
@@ -128,7 +118,7 @@ alternative=True
 # %time print(cls1(pred, true, alternative))
 
 cls2 = ndKS()
-alternative=False
+alternative=True
 # %time print(cls2(pred, true, alternative))
 
 N = 1000
@@ -156,5 +146,14 @@ plt.ylabel('Test Statistic ($D$)')
 plt.plot(mus, Ds, 'r', label = 'My method')
 plt.plot(mus, Ds2, 'b', label = 'Direct implementation')
 plt.legend()
-plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/metrics/ndKS/compare.pdf')
+#plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/metrics/ndKS/compare_orig.pdf')
+plt.show()
+# -
+
+plt.xlabel(r'Mean ($\mu$)')
+plt.ylabel('Test Statistic ($D$)')
+plt.plot(mus, Ds, 'r', label = 'My method')
+plt.plot(mus, Ds2, 'b', label = 'Direct implementation')
+plt.legend()
+#plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/metrics/ndKS/compare_orig.pdf')
 plt.show()

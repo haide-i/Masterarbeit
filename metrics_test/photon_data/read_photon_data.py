@@ -104,6 +104,7 @@ for i in range(1, 7):
                 plt.hist2d(detection_x, detection_y, bins=(100, 100))
                 plt.show()
                 plt.hist(event.detection_time, bins = 100)
+                plt.yscale('log')
                 plt.show()
 
 # +
