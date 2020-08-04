@@ -59,18 +59,18 @@ class ndKS(object):
             for i in range(2**dim):
                 stack_tens[i] = torch.sum(ndKS.squarewave(freq[i][0], x[:, 0, :]) &  ndKS.squarewave(freq[i][1], x[:, 1, :]) &  ndKS.squarewave(freq[i][2], x[:, 2, :]), dim=0).float() / N
             return(stack_tens)
-        #else:
+        else:
             # now use the comparisoned points to construct each octant (& is logical and)
-            #o1 = torch.sum( x[:, 0, :] &  x[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #o2 = torch.sum( x[:, 0, :] &  x[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #o3 = torch.sum( x[:, 0, :] & nx[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #o4 = torch.sum( x[:, 0, :] & nx[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #o5 = torch.sum(nx[:, 0, :] &  x[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #o6 = torch.sum(nx[:, 0, :] &  x[:, 1, :] & nx[:, 2, :], dim=0).float() / N
-            #o7 = torch.sum(nx[:, 0, :] & nx[:, 1, :] &  x[:, 2, :], dim=0).float() / N
-            #o8 = torch.sum(nx[:, 0, :] & nx[:, 1, :] & nx[:, 2, :], dim=0).float() / N
+            o1 = torch.sum( x[:, 0, :] &  x[:, 1, :] &  x[:, 2, :], dim=0).float() / N
+            o2 = torch.sum( x[:, 0, :] &  x[:, 1, :] & nx[:, 2, :], dim=0).float() / N
+            o3 = torch.sum( x[:, 0, :] & nx[:, 1, :] &  x[:, 2, :], dim=0).float() / N
+            o4 = torch.sum( x[:, 0, :] & nx[:, 1, :] & nx[:, 2, :], dim=0).float() / N
+            o5 = torch.sum(nx[:, 0, :] &  x[:, 1, :] &  x[:, 2, :], dim=0).float() / N
+            o6 = torch.sum(nx[:, 0, :] &  x[:, 1, :] & nx[:, 2, :], dim=0).float() / N
+            o7 = torch.sum(nx[:, 0, :] & nx[:, 1, :] &  x[:, 2, :], dim=0).float() / N
+            o8 = torch.sum(nx[:, 0, :] & nx[:, 1, :] & nx[:, 2, :], dim=0).float() / N
             # return the stack of octants, should be (n, 8)
-            #return torch.stack([o1, o2, o3, o4, o5, o6, o7, o8], dim=1)
+            return torch.stack([o1, o2, o3, o4, o5, o6, o7, o8], dim=1)
     
     def permute(self, J=1_000):
         all_pts = torch.cat((self.pred, self.true), dim=0)

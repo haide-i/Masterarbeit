@@ -20,6 +20,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from glob import glob
 import random
+import time
 from scipy.stats import wasserstein_distance
 home = os.getenv("HOME")
 filenames = glob(home + '/data/photons/without_non_det/clean_photons_100x1E5_randpos_randdir_mod5_*.h5')
@@ -33,11 +34,35 @@ def kolmogorov_1d(y1, y2):
 
 
 def semd(p,t):
-    cdf_p = np.cumsum(p)
-    cdf_t = np.cumsum(t)
+    p = np.asarray(p)
+    t = np.asarray(t)
+    cdf_p = np.cumsum(p)#/p.size
+    cdf_t = np.cumsum(t)#/t.size
     d_cdf = cdf_p - cdf_t
     d_cdf_s = np.sum(np.power(d_cdf, 2))
     return np.mean(d_cdf_s)
+
+
+def emd(u_values, v_values):
+    u_values = np.asarray(u_values, dtype=float)
+    v_values = np.asarray(v_values, dtype=float)
+    u_sorter = np.argsort(u_values)
+    v_sorter = np.argsort(v_values)
+
+    all_values = np.concatenate((u_values, v_values))
+    all_values.sort(kind='mergesort')
+
+    deltas = np.diff(all_values)
+
+    u_cdf_indices = u_values[u_sorter].searchsorted(all_values[:-1], 'right')
+    v_cdf_indices = v_values[v_sorter].searchsorted(all_values[:-1], 'right')
+
+    u_cdf = u_cdf_indices / u_values.size
+    
+    v_cdf = v_cdf_indices / v_values.size
+
+    return np.sum(np.multiply(np.abs(u_cdf - v_cdf), deltas))
+    
 
 
 dataframes = [pd.read_hdf(f) for f in filenames]
@@ -53,165 +78,120 @@ print(total)
 
 nr_of_photons = 100
 use_rand = True
-for j in (100, 7000):
+photons = np.arange(100, 5000, 200)
+for j in photons:
     for i in range(len(dataframes)):
-        df = pd.DataFrame(columns = ['evt_idx', 'EMD_x', 'EMD_y', 'EMD_t', 'EMD_xy', 'EMD_xt', 'EMD_yt'])#, 
-                                     #'KS_x', 'KS_y', 'KS_t', 'KS_xy', 'KS_xt', 'KS_yt'])
+        df = pd.DataFrame(columns = ['evt_idx', 'EMD_x', 'EMD_y', 'EMD_t', 'EMD_xy', 'EMD_xt', 'EMD_yt',
+                                    'SEMD_x', 'SEMD_y', 'SEMD_t', 'SEMD_xy', 'SEMD_xt', 'SEMD_yt'])
+        dfrand = pd.DataFrame(columns = ['evt_idx', 'EMD_x', 'EMD_y', 'EMD_t', 'EMD_xy', 'EMD_xt', 'EMD_yt',
+                                    'SEMD_x', 'SEMD_y', 'SEMD_t', 'SEMD_xy', 'SEMD_xt', 'SEMD_yt'])
         EMD_x = []
         EMD_y = []
         EMD_t = []
         EMD_xy = []
         EMD_xt = []
         EMD_yt = []
-        #KS_x = []
-        #KS_y = []
-        #KS_t = []
-        #KS_xy = []
-        #KS_xt = []
-        #KS_yt = []
+        SEMD_x = []
+        SEMD_y = []
+        SEMD_t = []
+        SEMD_xy = []
+        SEMD_xt = []
+        SEMD_yt = []
+        randEMD_x = []
+        randEMD_y = []
+        randEMD_t = []
+        randEMD_xy = []
+        randEMD_xt = []
+        randEMD_yt = []
+        randSEMD_x = []
+        randSEMD_y = []
+        randSEMD_t = []
+        randSEMD_xy = []
+        randSEMD_xt = []
+        randSEMD_yt = []
         evt_idx = []
         for event in event_idx[i]:
             if len(dataframes[i][dataframes[i].evt_idx == event].index) > 10000:
                 chosen_event = dataframes[i][dataframes[i].evt_idx == event]
-                if use_rand:
-                    rand_event = dataframes[i][dataframes[i].evt_idx == random.choice(event_idx[i])]
-                    rand_length = np.arange(0, len(rand_event))
+                rand_event = dataframes[i][dataframes[i].evt_idx == random.choice(event_idx[i])]
+                rand_length = np.arange(0, len(rand_event))
                 draw_rand = np.arange(0, len(chosen_event))
                 #print(event)
+                start = time.time()
                 for k in range(5):
                     event_sample1 = np.random.choice(draw_rand, j)
-                    #print('before: ', chosen_event.iloc[event_sample1,:].detection_pixel_x.max(axis=0), chosen_event.iloc[event_sample1,:].detection_pixel_x.min(axis=0))
                     x1 = (chosen_event.iloc[event_sample1,:].detection_pixel_x + 23)/46.
+                    x1 = x1/(np.sum(x1))
                     y1 = (chosen_event.iloc[event_sample1,:].detection_pixel_y + 4.2)/(4.2+1.01)
+                    y1 = y1/(np.sum(y1))
                     t1 = (chosen_event.iloc[event_sample1,:].detection_time)/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0))
-                    if use_rand:
-                        event_sample2 = np.random.choice(rand_length, j)
-                        x2 = (rand_event.iloc[event_sample2,:].detection_pixel_x + 23)/46.
-                        y2 = (rand_event.iloc[event_sample2,:].detection_pixel_y + 4.2)/(4.2+1.01)
-                        t2 = rand_event.iloc[event_sample2,:].detection_time/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0))
-                    else:
-                        event_sample2 = np.random.choice(draw_rand, j)
-                        x2 = (chosen_event.iloc[event_sample2,:].detection_pixel_x + 23)/46.
-                        y2 = (chosen_event.iloc[event_sample2,:].detection_pixel_y + 4.2)/(4.2+1.01)
-                        t2 = chosen_event.iloc[event_sample2,:].detection_time/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0))
+                    event_samplerand = np.random.choice(rand_length, j)
+                    t1 = t1/(np.sum(t1))
+                    xrand = (rand_event.iloc[event_samplerand,:].detection_pixel_x + 23)/46.
+                    xrand = xrand/(np.sum(xrand))
+                    yrand = (rand_event.iloc[event_samplerand,:].detection_pixel_y + 4.2)/(4.2+1.01)
+                    yrand = yrand/(np.sum(yrand))
+                    trand = rand_event.iloc[event_samplerand,:].detection_time/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0))
+                    trand = trand/(np.sum(trand))
+                    event_sample2 = np.random.choice(draw_rand, j)
+                    x2 = (chosen_event.iloc[event_sample2,:].detection_pixel_x + 23)/46.
+                    x2 = x2/(np.sum(x2))
+                    y2 = (chosen_event.iloc[event_sample2,:].detection_pixel_y + 4.2)/(4.2+1.01)
+                    y2 = y2/(np.sum(y2))
+                    t2 = chosen_event.iloc[event_sample2,:].detection_time/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0))
+                    t2 = t2/(np.sum(t2))
                     evt_idx.append(event)
-                    EMD_x.append(semd(x1, x2))
-                    EMD_y.append(semd(y1, y2))
-                    EMD_t.append(semd(t1, t2))
-                    EMD_xy.append(semd((x1*x1 + y1*y1)**0.5, (x2*x2 + y2*y2)**0.5))
-                    EMD_xt.append(semd((x1*x1 + t1*t1)**0.5, (x2*x2 + t2*t2)**0.5))
-                    EMD_yt.append(semd((t1*t1 + y1*y1)**0.5, (t2*t2 + y2*y2)**0.5))
-                    #KS_x.append(kolmogorov_1d(x1, x2))
-                    #KS_y.append(kolmogorov_1d(y1, y2))
-                    #KS_t.append(kolmogorov_1d(t1, t2))
-                    #KS_xy.append(kolmogorov_1d((x1*x1 + y1*y1)**0.5, (x2*x2 + y2*y2)**0.5))
-                    #KS_xt.append(kolmogorov_1d((x1*x1 + t1*t1)**0.5, (x2*x2 + t2*t2)**0.5))
-                    #KS_yt.append(kolmogorov_1d((t1*t1 + y1*y1)**0.5, (t2*t2 + y2*y2)**0.5))
-        df['evt_idx'] = evt_idx
-        df['EMD_x'] = EMD_x
-        df['EMD_y'] = EMD_y
-        df['EMD_t'] = EMD_t
-        df['EMD_xy'] = EMD_xy
-        df['EMD_xt'] = EMD_xt
-        df['EMD_yt'] = EMD_yt
-        #df['KS_x'] = KS_x
-        #df['KS_y'] = KS_y
-        #df['KS_t'] = KS_t
-        #df['KS_xy'] = KS_xy
-        #df['KS_xt'] = KS_xt
-        #df['KS_yt'] = KS_yt
-        if use_rand:
-            df.to_hdf('./uncertainty/1D/random_events/1duncertainty_semd_random_{}_{}'.format(j, i), key = 'df', mode = 'w')     
-        else:
-            df.to_hdf('./uncertainty/1D/same/1duncertainty_semd_{}_{}'.format(j, i), key = 'df', mode = 'w') 
-
-uncertainty_filenames7000 = glob(cwd + '/uncertainty/1D/same/1duncertainty_semd_7000_*')
-files7000 = [pd.read_hdf(f) for f in uncertainty_filenames7000]
-uncertainty_filenames100 = glob(cwd + '/uncertainty/1D/same/1duncertainty_semd_100_*')
-files100 = [pd.read_hdf(f) for f in uncertainty_filenames100]
-addto7000 = files7000[0]
-addto100 = files100[0]
-randomfiles7000 = glob(cwd + '/uncertainty/1D/random_events/1duncertainty_semd_random_7000_*')
-randomfiles100 = glob(cwd + '/uncertainty/1D/random_events/1duncertainty_semd_random_100_*')
-randomfile7000 = [pd.read_hdf(f) for f in randomfiles7000]
-randomfile100 = [pd.read_hdf(f) for f in randomfiles100]
-randaddto7000 = randomfile7000[0]
-randaddto100 = randomfile100[0]
-for i in range(1, len(files7000)):
-    addto7000 = pd.concat([addto7000, files7000[i]], ignore_index = True)
-    addto100 = pd.concat([addto100, files100[i]], ignore_index = True)
-    randaddto7000 = pd.concat([randaddto7000, randomfile7000[i]], ignore_index = True)
-    randaddto100 = pd.concat([randaddto100, randomfile100[i]], ignore_index = True)
-completerandom7000 = randaddto7000
-completerandom100 = randaddto100
-completeframe100 = addto100
-completeframe7000 = addto7000
-
-completerandom100.head(-1)
-
-plt.figure(figsize = (20,5))
-plt.subplot(121)
-plt.hist(completerandom100.EMD_xy, bins = 50, label='r100 xy')
-#plt.hist(completeframe100.EMD_xy, bins = 50, label='100 xy')
-plt.legend()
-plt.subplot(122)
-plt.hist(completerandom7000.EMD_xy, bins = 50, label='r7000 xy')
-#plt.hist(completeframe7000.EMD_xy, bins = 50, label='7000 xy')#, alpha = 0.5)
-plt.legend()
-#plt.savefig('./uncertainty/1D/same/xySEMD.pdf')
-plt.show()
-plt.figure(figsize = (20,5))
-plt.subplot(121)
-plt.hist(completerandom100.EMD_xt, bins = 50, label='r100 xt')
-#plt.hist(completeframe100.EMD_xt, bins = 50, label='100 xt')
-plt.legend()
-plt.subplot(122)
-plt.hist(completerandom7000.EMD_xt, bins = 50, label='r7000 xt')
-#plt.hist(completeframe7000.EMD_xt, bins = 50, label= '7000 xt')#, alpha = 0.5)
-plt.legend()
-#plt.savefig('./uncertainty/1D/same/xtSEMD.pdf')
-plt.show()
-plt.figure(figsize = (20,5))
-plt.subplot(121)
-plt.hist(completerandom100.EMD_x, bins = 50, label='r100 x')
-#plt.hist(completeframe100.EMD_x, bins = 50, label='100 x')
-plt.legend()
-plt.subplot(122)
-plt.hist(completerandom7000.EMD_x, bins = 50, label='r7000 x')
-#plt.hist(completeframe7000.EMD_x, bins = 50, label='7000 x')#, alpha = 0.5)
-plt.legend()
-#plt.savefig('./uncertainty/1D/same/xSEMD.pdf')
-plt.show()
-plt.figure(figsize = (20,5))
-plt.subplot(121)
-plt.hist(completerandom100.EMD_t, bins = 50, label='r100 t')
-#plt.hist(completeframe100.EMD_t, bins = 50, label='100 t')
-plt.legend()
-plt.subplot(122)
-plt.hist(completerandom7000.EMD_t, bins = 50, label='r7000 t')
-#plt.hist(completeframe7000.EMD_t, bins = 50, label = '7000 t')#, alpha = 0.5)
-plt.legend()
-#plt.savefig('./uncertainty/1D/same/tSEMD.pdf')
-plt.show()
-plt.figure(figsize = (20,5))
-plt.subplot(121)
-plt.hist(completerandom100.EMD_yt, bins = 50, label='r100 yt')
-#plt.hist(completeframe100.EMD_yt, bins = 50, label='100 yt')
-plt.legend()
-plt.subplot(122)
-plt.hist(completerandom7000.EMD_yt, bins = 50, label='r7000 yt')
-#plt.hist(completeframe7000.EMD_yt, bins = 50, label = '7000 yt')#, alpha = 0.5)
-plt.legend()
-#plt.savefig('./uncertainty/1D/same/ytSEMD.pdf')
-plt.show()
-plt.figure(figsize = (20,5))
-plt.subplot(121)
-plt.hist(completerandom100.EMD_y, bins = 50, label='r100 y')
-#plt.hist(completeframe100.EMD_y, bins = 50, label='100 y')
-plt.legend()
-plt.subplot(122)
-plt.hist(completerandom7000.EMD_y, bins = 50, label='r7000 y')
-#plt.hist(completeframe7000.EMD_y, bins = 50, label = '7000 y')#, alpha = 0.5)
-plt.legend()
-#plt.savefig('./uncertainty/1D/same/ySEMD.pdf')
-plt.show()
+                    wasserstein.append(wasserstein_distance(x1, x2))
+                    EMD_x.append(emd(x1, x2))
+                    EMD_y.append(emd(y1, y2))
+                    EMD_t.append(emd(t1, t2))
+                    EMD_xy.append(emd((x1*x1 + y1*y1)**0.5, (x2*x2 + y2*y2)**0.5))
+                    EMD_xt.append(emd((x1*x1 + t1*t1)**0.5, (x2*x2 + t2*t2)**0.5))
+                    EMD_yt.append(emd((t1*t1 + y1*y1)**0.5, (t2*t2 + y2*y2)**0.5))
+                    SEMD_x.append(semd(x1, x2))
+                    SEMD_y.append(semd(y1, y2))
+                    SEMD_t.append(semd(t1, t2))
+                    SEMD_xy.append(semd((x1*x1 + y1*y1)**0.5, (x2*x2 + y2*y2)**0.5))
+                    SEMD_xt.append(semd((x1*x1 + t1*t1)**0.5, (x2*x2 + t2*t2)**0.5))
+                    SEMD_yt.append(semd((t1*t1 + y1*y1)**0.5, (t2*t2 + y2*y2)**0.5))
+                    randEMD_x.append(emd(x1, xrand))
+                    randEMD_y.append(emd(y1, yrand))
+                    randEMD_t.append(emd(t1, trand))
+                    randEMD_xy.append(emd((x1*x1 + y1*y1)**0.5, (xrand*xrand + yrand*yrand)**0.5))
+                    randEMD_xt.append(emd((x1*x1 + t1*t1)**0.5, (xrand*xrand + trand*trand)**0.5))
+                    randEMD_yt.append(emd((t1*t1 + y1*y1)**0.5, (trand*trand + trand*trand)**0.5))
+                    randSEMD_x.append(semd(x1, xrand))
+                    randSEMD_y.append(semd(y1, yrand))
+                    randSEMD_t.append(semd(t1, trand))
+                    randSEMD_xy.append(semd((x1*x1 + y1*y1)**0.5, (xrand*xrand + yrand*yrand)**0.5))
+                    randSEMD_xt.append(semd((x1*x1 + t1*t1)**0.5, (xrand*xrand + trand*trand)**0.5))
+                    randSEMD_yt.append(semd((t1*t1 + y1*y1)**0.5, (trand*trand + yrand*yrand)**0.5))
+                end = time.time()
+                print('time: ', end - start)
+    df['evt_idx'] = evt_idx
+    df['EMD_x'] = EMD_x
+    df['EMD_y'] = EMD_y
+    df['EMD_t'] = EMD_t
+    df['EMD_xy'] = EMD_xy
+    df['EMD_xt'] = EMD_xt
+    df['EMD_yt'] = EMD_yt
+    df['SEMD_x'] = SEMD_x
+    df['SEMD_y'] = SEMD_y
+    df['SEMD_t'] = SEMD_t
+    df['SEMD_xy'] = SEMD_xy
+    df['SEMD_xt'] = SEMD_xt
+    df['SEMD_yt'] = SEMD_yt
+    dfrand['EMD_x'] = randEMD_x
+    dfrand['EMD_y'] = randEMD_y
+    dfrand['EMD_t'] = randEMD_t
+    dfrand['EMD_xy'] = randEMD_xy
+    dfrand['EMD_xt'] = randEMD_xt
+    dfrand['EMD_yt'] = randEMD_yt
+    dfrand['SEMD_x'] = randSEMD_x
+    dfrand['SEMD_y'] = randSEMD_y
+    dfrand['SEMD_t'] = randSEMD_t
+    dfrand['SEMD_xy'] = randSEMD_xy
+    dfrand['SEMD_xt'] = randSEMD_xt
+    dfrand['SEMD_yt'] = randSEMD_yt
+    dfrand.to_hdf('./uncertainty/1D/random_events/1duncertainty_norm_emd_semd_random_{}'.format(j), key = 'dfrand', mode = 'w')     
+    df.to_hdf('./uncertainty/1D/same/1duncertainty_norm_emd_semd_{}'.format(j), key = 'df', mode = 'w') 

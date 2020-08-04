@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "uncertainty2d.py", line 244, in <module>
+    KS_yt_rand.append(cls(torch.stack((y1, t1), axis=-1), torch.stack((yrand, trand), axis=-1), alternative))
+  File "/home/ihaide/Documents/Masterarbeit-master/metrics_test/photon_data/ndks2d.py", line 32, in __call__
+    os_tp = self.get_octants(pred, true, alternative)
+  File "/home/ihaide/Documents/Masterarbeit-master/metrics_test/photon_data/ndks2d.py", line 60, in get_octants
+    stack_tens[i] = torch.sum(ndKS.squarewave(freq[i][0], x[:, 0, :]) &  ndKS.squarewave(freq[i][1], x[:, 1, :]), dim=0).float() / N
+KeyboardInterrupt

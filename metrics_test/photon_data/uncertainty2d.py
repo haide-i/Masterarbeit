@@ -18,18 +18,19 @@ import numpy as np
 import torch
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
+import multiprocessing
+#import matplotlib.pyplot as plt
 import time
 from glob import glob
-from scipy.stats import wasserstein_distance
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KernelDensity
+#from scipy.stats import wasserstein_distance
+#from sklearn.model_selection import GridSearchCV
+#from sklearn.neighbors import KernelDensity
 import random
 import ndks2d
 home = os.getenv("HOME")
 filenames = glob(home + '/data/photons/without_non_det/clean_photons_100x1E5_randpos_randdir_mod5_*.h5')
-from IPython.core.display import display, HTML
-display(HTML("<style>.container { width:100% !important; }</style>"))
+#from IPython.core.display import display, HTML
+#display(HTML("<style>.container { width:100% !important; }</style>"))
 
 
 # +
@@ -120,83 +121,13 @@ def kolmogorov_2d(x1, y1, x2, y2, bin1, bin2):
                 diff_abs = diff_point
     return diff_abs
 
-
+torch.set_num_threads(13)
 dataframes = [pd.read_hdf(f) for f in filenames]
 event_idx = []
 for i in range(len(dataframes)):
     event_idx.append(np.unique(dataframes[i].evt_idx))
 
-for i in range(len(dataframes)):
-    for event in event_idx[i]:
-        if event == 877:
-            chosen_event = dataframes[i][dataframes[i].evt_idx == 877]
-chosen_event.head(-1)
-
-nr_of_photons = 100
-use_rand = False
-cls = ndks2d.ndKS()
-alternative = True
-for photons in (100, 1000):
-    for i in range(len(dataframes)):
-        if i > 0:
-            del df
-        df = pd.DataFrame(columns = ['evt_idx', 'KS_xy', 'KS_xt', 'KS_yt'])#, 'Kernel_xy', 'Kernel_xt', 'Kernel_yt'])
-        KS_xy = []
-        KS_xt = []
-        KS_yt = []
-        #Kernel_xy = []
-        #Kernel_xt = []
-        #Kernel_yt = []
-        evt_idx = []
-        for event in event_idx[i]:
-            print(event)
-            if len(dataframes[i][dataframes[i].evt_idx == event].index) > 10000:
-                chosen_event = dataframes[i][dataframes[i].evt_idx == event]
-                if (chosen_event.detection_pixel_x.max(axis = 0) - chosen_event.detection_pixel_x.min(axis = 0) != 0) \
-                & (chosen_event.detection_pixel_y.max(axis = 0) - chosen_event.detection_pixel_y.min(axis = 0) != 0) \
-                & (chosen_event.detection_time.max(axis = 0) - chosen_event.detection_time.min(axis = 0) != 0):
-                    draw_rand = np.arange(0, len(chosen_event))
-                    if use_rand:
-                        rand_event = dataframes[i][dataframes[i].evt_idx == random.choice(event_idx[i])]
-                        rand_length = np.arange(0, len(rand_event))
-                    start = time.time()
-                    for j in range(5):
-                        event_sample1 = np.random.choice(draw_rand, photons)
-                        x1 = torch.from_numpy(np.asarray(chosen_event.iloc[event_sample1,:].detection_pixel_x.to_numpy() + 23)/46.)
-                        y1 = torch.from_numpy((chosen_event.iloc[event_sample1,:].detection_pixel_y.to_numpy() + 4.2)/(4.2+1.01))
-                        t1 = torch.from_numpy((chosen_event.iloc[event_sample1,:].detection_time.to_numpy())/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0)))
-                        if use_rand:
-                                event_sample2 = np.random.choice(rand_length, photons)
-                                x2 = torch.from_numpy((rand_event.iloc[event_sample2,:].detection_pixel_x.to_numpy() + 23)/46.)
-                                y2 = torch.from_numpy((rand_event.iloc[event_sample2,:].detection_pixel_y.to_numpy() + 4.2)/(4.2+1.01))
-                                t2 = torch.from_numpy(rand_event.iloc[event_sample2,:].detection_time.to_numpy()/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0)))
-                        else:
-                            event_sample2 = np.random.choice(draw_rand, photons)
-                            x2 = torch.from_numpy((chosen_event.iloc[event_sample2,:].detection_pixel_x.to_numpy() + 23)/46.)
-                            y2 = torch.from_numpy((chosen_event.iloc[event_sample2,:].detection_pixel_y.to_numpy() + 4.2)/(4.2+1.01))
-                            t2 = torch.from_numpy(chosen_event.iloc[event_sample2,:].detection_time.to_numpy()/(chosen_event.detection_time.max(axis=0) - chosen_event.detection_time.min(axis=0)))
-                        evt_idx.append(event)
-                        KS_xy.append(cls(torch.stack((x1, y1), axis=-1), torch.stack((x2, y2), axis=-1), alternative))
-                        KS_xt.append(cls(torch.stack((x1, t1), axis=-1), torch.stack((x2, t2), axis=-1), alternative))
-                        KS_yt.append(cls(torch.stack((y1, t1), axis=-1), torch.stack((y2, t2), axis=-1), alternative))
-                        #Kernel_xy.append(kernel_test(x1, y1, x2, y2))
-                        #Kernel_xt.append(kernel_test(x1, t1, x2, t2))
-                        #Kernel_yt.append(kernel_test(y1, t1, y2, t2))
-                    end = time.time()
-                    print('time:', end - start)
-        df['evt_idx'] = evt_idx
-        df['KS_xy'] = KS_xy
-        df['KS_xt'] = KS_xt
-        df['KS_yt'] = KS_yt
-        #df['Kernel_xy'] = Kernel_xy
-        #df['Kernel_xt'] = Kernel_xt
-        #df['Kernel_yt'] = Kernel_yt
-        if use_rand:
-            df.to_hdf('./uncertainty/2D/2duncertainty_rand_ndimkolmogorov_{}_{}'.format(photons, i), key = 'df', mode = 'w')
-        else:
-            df.to_hdf('./uncertainty/2D/2duncertainty_ndimkolmogorov_{}_{}'.format(photons, i), key = 'df', mode = 'w')
-
-nr_of_photons = np.arange(100, 7000, 100)
+nr_of_photons = np.arange(10, 200, 10)
 use_rand = True
 cls = ndks2d.ndKS()
 alternative = True
@@ -211,7 +142,7 @@ for photons in nr_of_photons:
     evt_idx = []
     for i in range(len(dataframes)):
         for event in event_idx[i]:
-            print(event)
+            #print(event)
             if len(dataframes[i][dataframes[i].evt_idx == event].index) > 10000:
                 chosen_event = dataframes[i][dataframes[i].evt_idx == event]
                 if (chosen_event.detection_pixel_x.max(axis = 0) - chosen_event.detection_pixel_x.min(axis = 0) != 0) \
@@ -221,7 +152,7 @@ for photons in nr_of_photons:
                     rand_event = dataframes[i][dataframes[i].evt_idx == random.choice(event_idx[i])]
                     rand_length = np.arange(0, len(rand_event))
                     start = time.time()
-                    for j in range(5):
+                    for j in range(3):
                         event_sample1 = np.random.choice(draw_rand, photons)
                         x1 = torch.from_numpy(np.asarray(chosen_event.iloc[event_sample1,:].detection_pixel_x.to_numpy() + 23)/46.)
                         y1 = torch.from_numpy((chosen_event.iloc[event_sample1,:].detection_pixel_y.to_numpy() + 4.2)/(4.2+1.01))
