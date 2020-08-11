@@ -6,3 +6,6 @@ venv/
 *.ipynb
 ekp_style/
 timeline/
+metrics_test/photon_data/__pycache__/
+metrics_test/photon_data/.ipynb_checkpoints/
+metrics_test/.ipynb_checkpoints/
