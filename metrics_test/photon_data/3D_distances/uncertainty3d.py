@@ -26,33 +26,29 @@ import pickle
 #from scipy.stats import wasserstein_distance
 home = os.getenv("HOME")
 filenames = '/ceph/ihaide/photons/without_non_detected/'
-cwd = os.getcwd()
+ceph = '/ceph/ihaide/'
 #from IPython.core.display import display, HTML
 #display(HTML("<style>.container { width:100% !important; }</style>"))
 
-# +
-#datanames = np.arange(0, 1000, 1)
-#evt_dict = dict.fromkeys(datanames)
-#event_idx = []
-#for i in datanames:
-#    print(i)
-#    event_idx_help = []
-#    file = filenames + 'clean_photons_100x1E5_randpos_randdir_mod5_{}.h5'.format(i)
-#    if os.path.isfile(file):
-#        file = pd.read_hdf(filenames + 'clean_photons_100x1E5_randpos_randdir_mod5_{}.h5'.format(i))
-#        for event in np.unique(file.evt_idx):
-#            if len(file[file.evt_idx == event].index) > 10000:
-#                if (file[file.evt_idx == event].detection_pixel_x.max(axis = 0) - file[file.evt_idx == event].detection_pixel_x.min(axis = 0) != 0) \
-#                & (file[file.evt_idx == event].detection_pixel_y.max(axis = 0) - file[file.evt_idx == event].detection_pixel_y.min(axis = 0) != 0) \
-#                & (file[file.evt_idx == event].detection_time.max(axis = 0) - file[file.evt_idx == event].detection_time.min(axis = 0) != 0):
-#                    event_idx_help.append(event)
-#                    event_idx.append((event, i))
-#    evt_dict[i] = event_idx_help
-#a_file = open("/ceph/ihaide/distances/3D/events_sorted.pkl", "wb")
-#pickle.dump(evt_dict, a_file)
-#a_file.close()
-#np.savetxt('/ceph/ihaide/distances/3D/events_choose_random.txt', event_idx)
-# -
+datanames = np.arange(0, 1000, 1)
+evt_dict = dict.fromkeys(datanames)
+event_idx = []
+for i in datanames:
+    print(i)
+    event_idx_help = []
+    file = ceph + '/photons/first_200/clean_photons_100x1E5_first200_{}.h5'.format(i)
+    if os.path.isfile(file):
+        df = pd.read_hdf(file)
+        for event in np.unique(df.evt_idx):
+            event_idx_help.append(event)
+            event_idx.append((event, i))
+    evt_dict[i] = event_idx_help
+a_file = open("/ceph/ihaide/distances/events_max200_sorted.pkl", "wb")
+pickle.dump(evt_dict, a_file)
+a_file.close()
+event_idx = np.array(event_idx)
+event_idx = event_idx.astype(int)
+np.savetxt('/ceph/ihaide/distances/events_max200_choose_random.txt', event_idx)
 
 a_file = open("/ceph/ihaide/distances/events_sorted.pkl", "rb")
 evt_dict = pickle.load(a_file)
