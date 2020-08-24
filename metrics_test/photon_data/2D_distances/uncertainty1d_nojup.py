@@ -59,7 +59,7 @@ def norm(p, t=None):
     else:
         sqr_sum = (p*p + t*t)**0.5
         return sqr_sum/np.sum(sqr_sum)
-    
+
 a_file = open("/ceph/ihaide/distances/events_sorted.pkl", "rb")
 evt_dict = pickle.load(a_file)
 event_idx = np.loadtxt('/ceph/ihaide/distances/events_choose_random.txt')

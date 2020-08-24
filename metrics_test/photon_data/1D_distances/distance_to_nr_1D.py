@@ -27,7 +27,8 @@ from ekp_style import set_ekp_style
 set_ekp_style(set_sizes=True, set_background=True, set_colors=True)
 
 keys = ('x', 'y', 't', 'xy', 'xt', 'yt')
-photons = np.concatenate((np.arange(20, 200, 10), np.arange(200, 1500, 200)))
+#photons = np.concatenate((np.arange(20, 200, 10), np.arange(200, 1500, 200)))
+photons = np.arange(10, 130, 10)
 for p in photons:
     emd_same = pd.read_hdf(ceph + '1duncertainty_emd_{}.h5'.format(p))
     emd_random = pd.read_hdf(ceph + '1duncertainty_emd_random_{}.h5'.format(p))
@@ -82,10 +83,10 @@ for dist in keys:
     help_mean_emd_random = []
     help_mean_semd_random = []
     for p in photons:
-        emd_same = pd.read_hdf(ceph + '1duncertainty_size_emd_{}.h5'.format(p))
-        emd_random = pd.read_hdf(ceph + '1duncertainty_size_emd_random_{}.h5'.format(p))
-        semd_same = pd.read_hdf(ceph + '1duncertainty_size_semd_{}.h5'.format(p))
-        semd_random = pd.read_hdf(ceph + '1duncertainty_size_semd_random_{}.h5'.format(p))
+        emd_same = pd.read_hdf(ceph + '1duncertainty_emd_{}.h5'.format(p))
+        emd_random = pd.read_hdf(ceph + '1duncertainty_emd_random_{}.h5'.format(p))
+        semd_same = pd.read_hdf(ceph + '1duncertainty_semd_{}.h5'.format(p))
+        semd_random = pd.read_hdf(ceph + '1duncertainty_semd_random_{}.h5'.format(p))
         help_mean_emd.append(emd_same[dist].std(axis=0))
         help_mean_semd.append(semd_same[dist].std(axis=0))
         help_mean_emd_random.append(emd_random[dist].std(axis=0))
@@ -95,8 +96,6 @@ for dist in keys:
     mean_emd_random[dist] = help_mean_emd_random
     mean_semd_random[dist] = help_mean_semd_random
 # -
-
-mean_emd
 
 x = np.arange(200, 5000, 200)
 for dist in keys:

@@ -22,7 +22,7 @@ class ndKS(object):
         return (((-1)**torch.floor(f)+1)/2 - x).long().abs()
     
     @staticmethod
-    def get_octants(x, points, alternative):
+    def get_octants(x, points, alternative=False):
         N = x.shape[0]
         dim = x.shape[1]
         # shape our input and test points into the right shape (N, 3, 1)
