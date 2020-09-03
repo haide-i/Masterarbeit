@@ -20,9 +20,13 @@ import gzip
 import pandas as pd
 import matplotlib.pyplot as plt
 home = os.getenv("HOME")
+ceph = '/ceph/ihaide/photons/without_non_detected/'
 
 filename1 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_99.h5"
 filename2 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_3.h5"
+file = pd.read_hdf(ceph + 'clean_photons_100x1E5_randpos_randdir_mod5_1.h5')
+
+file[file.evt_idx==200]
 
 f = h5.File(filename1, 'r')
 df = pd.read_hdf(filename1)

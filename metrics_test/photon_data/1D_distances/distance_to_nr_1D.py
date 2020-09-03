@@ -28,29 +28,29 @@ set_ekp_style(set_sizes=True, set_background=True, set_colors=True)
 
 keys = ('x', 'y', 't', 'xy', 'xt', 'yt')
 #photons = np.concatenate((np.arange(20, 200, 10), np.arange(200, 1500, 200)))
-photons = np.arange(10, 130, 10)
+photons = np.arange(10, 90, 10)
 for p in photons:
-    emd_same = pd.read_hdf(ceph + '1duncertainty_emd_{}.h5'.format(p))
-    emd_random = pd.read_hdf(ceph + '1duncertainty_emd_random_{}.h5'.format(p))
-    semd_same = pd.read_hdf(ceph + '1duncertainty_semd_{}.h5'.format(p))
-    semd_random = pd.read_hdf(ceph + '1duncertainty_semd_random_{}.h5'.format(p))
+    emd_same = pd.read_hdf(ceph + '1duncertainty_histnorm_emd_{}.h5'.format(p))
+    #emd_random = pd.read_hdf(ceph + '1duncertainty_emd_random_{}.h5'.format(p))
+    semd_same = pd.read_hdf(ceph + '1duncertainty_histnorm_semd_{}.h5'.format(p))
+    #semd_random = pd.read_hdf(ceph + '1duncertainty_semd_random_{}.h5'.format(p))
     for dist in keys:
         plt.figure(figsize = (20,5))
         plt.subplot(121)
         plt.hist(emd_same[dist], bins = 20, alpha = 0.7, label='same')#, density=True)
-        plt.hist(emd_random[dist], bins = 20, alpha = 0.7, label='random')#, density=True)
+        #plt.hist(emd_random[dist], bins = 20, alpha = 0.7, label='random')#, density=True)
         plt.title('{} - {}'.format(p, dist))
         plt.legend()
         plt.subplot(122)
         plt.hist(semd_same[dist], bins = 20, alpha = 0.7, label='same SEMD')
-        plt.hist(semd_random[dist], bins = 20, alpha = 0.7, label='random SEMD')
+        #plt.hist(semd_random[dist], bins = 20, alpha = 0.7, label='random SEMD')
         plt.title('{} - {}'.format(p, dist))
         plt.legend()
         #plt.savefig(cwd + '/uncertainty/1D/plots/1duncertainty_norm_emd_semd_{}_{}'.format(p, dist))
         plt.show()
 
 keys = ('x', 'y', 't', 'xy', 'xt', 'yt')
-photons = np.concatenate((np.arange(20, 200, 10), np.arange(200, 1500, 200)))
+#photons = np.concatenate((np.arange(20, 200, 10), np.arange(200, 1500, 200)))
 for p in photons:
     emd_same = pd.read_hdf(ceph + '1duncertainty_size_emd_{}.h5'.format(p))
     emd_random = pd.read_hdf(ceph + '1duncertainty_size_emd_random_{}.h5'.format(p))
@@ -74,40 +74,48 @@ for p in photons:
 # +
 mean_emd = dict.fromkeys(keys)
 mean_semd = dict.fromkeys(keys)
+std_emd = dict.fromkeys(keys)
+std_semd = dict.fromkeys(keys)
 mean_emd_random = dict.fromkeys(keys)
 mean_semd_random = dict.fromkeys(keys)
 
 for dist in keys:
     help_mean_emd = []
     help_mean_semd = []
+    emd_std = []
+    semd_std = []
     help_mean_emd_random = []
     help_mean_semd_random = []
     for p in photons:
-        emd_same = pd.read_hdf(ceph + '1duncertainty_emd_{}.h5'.format(p))
-        emd_random = pd.read_hdf(ceph + '1duncertainty_emd_random_{}.h5'.format(p))
-        semd_same = pd.read_hdf(ceph + '1duncertainty_semd_{}.h5'.format(p))
-        semd_random = pd.read_hdf(ceph + '1duncertainty_semd_random_{}.h5'.format(p))
-        help_mean_emd.append(emd_same[dist].std(axis=0))
-        help_mean_semd.append(semd_same[dist].std(axis=0))
-        help_mean_emd_random.append(emd_random[dist].std(axis=0))
-        help_mean_semd_random.append(semd_random[dist].std(axis=0))
+        emd_same = pd.read_hdf(ceph + '1duncertainty_histnorm_emd_{}.h5'.format(p))
+        #emd_random = pd.read_hdf(ceph + '1duncertainty_emd_random_{}.h5'.format(p))
+        semd_same = pd.read_hdf(ceph + '1duncertainty_histnorm_semd_{}.h5'.format(p))
+        #semd_random = pd.read_hdf(ceph + '1duncertainty_semd_random_{}.h5'.format(p))
+        help_mean_emd.append(emd_same[dist].mean(axis=0))
+        help_mean_semd.append(semd_same[dist].mean(axis=0))
+        emd_std.append(emd_same[dist].std(axis=0))
+        semd_std.append(semd_same[dist].std(axis=0))
+        #help_mean_emd_random.append(emd_random[dist].std(axis=0))
+        #help_mean_semd_random.append(semd_random[dist].std(axis=0))
     mean_emd[dist] = help_mean_emd
     mean_semd[dist] = help_mean_semd
-    mean_emd_random[dist] = help_mean_emd_random
-    mean_semd_random[dist] = help_mean_semd_random
+    std_emd[dist] = emd_std
+    std_semd[dist] = semd_std
+    #mean_emd_random[dist] = help_mean_emd_random
+    #mean_semd_random[dist] = help_mean_semd_random
 # -
 
 x = np.arange(200, 5000, 200)
 for dist in keys:
     plt.figure(figsize = (20,5))
     plt.subplot(121)
-    plt.plot(mean_emd[dist], '.b', label='same')
-    plt.plot(mean_emd_random[dist], '.r', label='random')
+    plt.errorbar(photons, mean_emd[dist], yerr = std_emd[dist], fmt = '.b', label='same')
+    #plt.plot(mean_emd_random[dist], '.r', label='random')
     plt.title('EMD {}'.format(dist))
     plt.legend()
     plt.subplot(122)
-    plt.plot(mean_semd[dist], '.b', label='same')
-    plt.plot(mean_semd_random[dist], '.r', label='random')
+    plt.errorbar(photons, mean_semd[dist], yerr=std_semd[dist], fmt = '.b', label='same')
+    #plt.plot(mean_semd_random[dist], '.r', label='random')
     plt.title('SEMD {}'.format(dist))
     plt.legend()
     plt.show()

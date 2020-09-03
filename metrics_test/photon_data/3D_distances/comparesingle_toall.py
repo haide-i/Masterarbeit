@@ -22,6 +22,7 @@ import sys
 import torch
 sys.path.append('/home/ihaide/Documents/Masterarbeit-master/metrics_test/photon_data')
 from ndks import ndKS
+from class_distance import get_dstc
 import time
 ceph = '/ceph/ihaide/'
 
@@ -46,12 +47,14 @@ def variables(photon, evt1, evt2):
 
 def run_distance(first_frame):
     cls = ndKS()
+    dist = get_dstc(dim=3)
     last_frame = first_frame + 200
     photons = np.arange(10, 160, 10)
-    keys = ['evt_idx', 'file', 'rand_evt_idx', 'rand_file', 'KS_3D']
+    keys = ['evt_idx', 'file', 'rand_evt_idx', 'rand_file', 'KS_3D', 'dist_p', 'dist_x']
     for p in photons:
         print(p)
         data_array = []
+        dist_array = []
         ph_df = pd.DataFrame(columns = keys)
         for frame in range(first_frame, last_frame):
             start = time.time()
@@ -60,21 +63,25 @@ def run_distance(first_frame):
                 new_df = pd.read_hdf(file)
                 for event in evt_dict[frame]:
                     evt2 = new_df[new_df.evt_idx == event]
-                    x1, y1, t1, x2, y2, t2 = variables(p, ground_evt, evt2)
-                    data_array.append((ground_idx, 1, event, frame, cls(torch.stack((x1, y1, t1), axis=-1), torch.stack((x2, y2, t2), axis=-1))))
+                    data_array.append((ground_idx, file_nr, event, frame))
+                    dist_array.append(dist(ground_evt, evt2, p))
             end = time.time()
             print(frame, ' : ', end - start)
-        data_array = np.asarray(data_array).T
+        dist_array_new = np.asarray(dist_array).T
+        data_array_new = np.asarray(data_array).T
+        all_data = np.vstack((data_array_new, dist_array_new))
         for idx, key in enumerate(keys):
-            ph_df[key] = data_array[idx]
-        ph_df.to_hdf('/ceph/ihaide/distances/3D/3dKS_singletoall2_70ns_{}_{}_photons{}.h5'.format(first_frame, last_frame, p), key = 'ph_df', mode = 'w', complevel=9, complib='blosc:lz4')
+            ph_df[key] = all_data[idx]
+        ph_df.to_hdf('/ceph/ihaide/distances/3D/3dKS_singletoall_groundevt1_2_70ns_{}_{}_photons{}.h5'.format(first_frame, last_frame, p), key = 'ph_df', mode = 'w', complevel=9, complib='blosc:lz4')
 
 
 if __name__ == '__main__':
+    print('Test')
     a_file = open("/ceph/ihaide/distances/events_sorted.pkl", "rb")
     evt_dict = pickle.load(a_file)
-    df = pd.read_hdf(ceph + 'photons/70ns/clean_photons_100x1E5_70ns_1.h5')
-    ground_idx = evt_dict[1][2]
+    file_nr = 1
+    df = pd.read_hdf(ceph + 'photons/70ns/clean_photons_100x1E5_70ns_{}.h5'.format(file_nr))
+    ground_idx = evt_dict[file_nr][2]
     ground_evt = df[df.evt_idx == ground_idx]
     #run_distance(0)
     processes = []

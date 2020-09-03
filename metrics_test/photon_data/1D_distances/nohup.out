@@ -4460,3 +4460,157 @@ or from the matplotlib source distribution
 117  :  25.33696150779724
 118  :  25.713481187820435
 119  :  19.484265327453613
+10
+Process Process-5:
+Traceback (most recent call last):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "uncertainty1d_mp.py", line 113, in run_distance
+    EMD.append((ground_idx, file_nr, event, frame,
+NameError: name 'ground_idx' is not defined
+10
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "uncertainty1d_mp.py", line 113, in run_distance
+    EMD.append((ground_idx, file_nr, event, frame,
+NameError: name 'ground_idx' is not defined
+10
+Process Process-3:
+Traceback (most recent call last):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "uncertainty1d_mp.py", line 113, in run_distance
+    EMD.append((ground_idx, file_nr, event, frame,
+NameError: name 'ground_idx' is not defined
+10
+Process Process-2:
+Traceback (most recent call last):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "uncertainty1d_mp.py", line 113, in run_distance
+    EMD.append((ground_idx, file_nr, event, frame,
+NameError: name 'ground_idx' is not defined
+10
+Process Process-4:
+Traceback (most recent call last):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "uncertainty1d_mp.py", line 113, in run_distance
+    EMD.append((ground_idx, file_nr, event, frame,
+NameError: name 'ground_idx' is not defined
+Fatal Python error: Segmentation fault
+
+Current thread 0x00007f567c399740 (most recent call first):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/atom.py", line 1224 in fromarray
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/vlarray.py", line 821 in <listcomp>
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/vlarray.py", line 821 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/vlarray.py", line 677 in __getitem__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 2769 in read_array
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 3112 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 827 in func
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 1872 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 843 in select
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 415 in read_hdf
+  File "uncertainty1d_mp.py", line 108 in run_distance
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99 in run
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297 in _bootstrap
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 74 in _launch
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 20 in __init__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 277 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 223 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 112 in start
+  File "uncertainty1d_mp.py", line 151 in <module>
+Fatal Python error: Segmentation fault
+
+Current thread 0x00007f567c399740 (most recent call first):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/internals/concat.py", line 60 in concatenate_block_managers
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 503 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 287 in concat
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 3119 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 827 in func
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 1872 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 843 in select
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 415 in read_hdf
+  File "uncertainty1d_mp.py", line 108 in run_distance
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99 in run
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297 in _bootstrap
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 74 in _launch
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 20 in __init__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 277 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 223 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 112 in start
+  File "uncertainty1d_mp.py", line 151 in <module>
+Fatal Python error: Segmentation fault
+
+Current thread 0x00007f567c399740 (most recent call first):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/internals/concat.py", line 60 in concatenate_block_managers
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 503 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 287 in concat
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 3119 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 827 in func
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 1872 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 843 in select
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 415 in read_hdf
+  File "uncertainty1d_mp.py", line 108 in run_distance
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99 in run
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297 in _bootstrap
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 74 in _launch
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 20 in __init__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 277 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 223 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 112 in start
+  File "uncertainty1d_mp.py", line 151 in <module>
+Fatal Python error: Segmentation fault
+
+Current thread 0x00007f567c399740 (most recent call first):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/atom.py", line 1224 in fromarray
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/vlarray.py", line 821 in <listcomp>
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/vlarray.py", line 821 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/tables/vlarray.py", line 677 in __getitem__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 2769 in read_array
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 3112 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 827 in func
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 1872 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 843 in select
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 415 in read_hdf
+  File "uncertainty1d_mp.py", line 108 in run_distance
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99 in run
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297 in _bootstrap
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 74 in _launch
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 20 in __init__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 277 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 223 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 112 in start
+  File "uncertainty1d_mp.py", line 151 in <module>
+Fatal Python error: Segmentation fault
+
+Current thread 0x00007f567c399740 (most recent call first):
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/internals/concat.py", line 60 in concatenate_block_managers
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 503 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 287 in concat
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 3119 in read
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 827 in func
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 1872 in get_result
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 843 in select
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/site-packages/pandas/io/pytables.py", line 415 in read_hdf
+  File "uncertainty1d_mp.py", line 108 in run_distance
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 99 in run
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 297 in _bootstrap
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 74 in _launch
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/popen_fork.py", line 20 in __init__
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 277 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/context.py", line 223 in _Popen
+  File "/home/ihaide/miniconda3/envs/metrics_test/lib/python3.7/multiprocessing/process.py", line 112 in start
+  File "uncertainty1d_mp.py", line 151 in <module>
