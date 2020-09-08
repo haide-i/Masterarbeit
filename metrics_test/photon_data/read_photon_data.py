@@ -25,8 +25,29 @@ ceph = '/ceph/ihaide/photons/without_non_detected/'
 filename1 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_99.h5"
 filename2 = home + "/data/photons/photons_100x1E5_randpos_randdir_mod5_3.h5"
 file = pd.read_hdf(ceph + 'clean_photons_100x1E5_randpos_randdir_mod5_1.h5')
+test_ogun_1 = pd.read_hdf('/ceph/ihaide/ogun/Gauss/ogun_gauss_y_mu0_sigma0_1.h5')
 
-file[file.evt_idx==200]
+filename1
+
+test_ogun_2
+
+event = test_ogun
+prod_x = event.production_x.mean(axis=0)
+prod_y = event.production_y.mean(axis=0)
+prod_z = event.production_z.mean(axis=0)
+print(": x = ", prod_x, " y = ", prod_y, " z = ", prod_z)
+prod_px = event.production_px.mean(axis=0)
+prod_py = event.production_py.mean(axis=0)
+prod_pz = event.production_pz.mean(axis=0)
+print(": px = ", prod_px, " py = ", prod_py, " pz = ", prod_pz)
+max_time = event.detection_time.max(axis = 0)
+time_x = np.linspace(0, max_time, event.shape[0])
+detection_x = event.detection_pixel_x
+detection_y = event.detection_pixel_y
+plt.hist2d(detection_x, detection_y, bins=(100, 100))
+plt.show()
+plt.hist(event.detection_time, bins = 100)
+plt.show()
 
 f = h5.File(filename1, 'r')
 df = pd.read_hdf(filename1)

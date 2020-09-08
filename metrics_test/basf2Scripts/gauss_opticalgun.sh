@@ -11,7 +11,7 @@ declare -x phi=84.0527
 #source /cvmfs/belle.cern.ch/tools/b2setup release-05-00-00
 
  
-for i in {3001..6000}
+for i in {8001..10000}
 do
-	python runOpticalGunGauss.py --i=$i --var=x --x=$x --y=$y --z=$z --psi=$psi --theta=$theta --phi=$phi --numPhotons=50000
+	python runOpticalGunGauss.py --i=$i --var=theta --x=$x --y=$y --z=$z --psi=$psi --theta=$theta --phi=$phi --numPhotons=50000
 done

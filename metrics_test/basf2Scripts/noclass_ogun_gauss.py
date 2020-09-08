@@ -12,33 +12,22 @@ from enum import Enum
 import os
 from argparse import ArgumentParser
 
-#jobID = int(os.environ.get("SLURM_ARRAY_TASK_ID", "0"))
-#if not jobID:
-#    jobID = int(os.environ.get("SLURM_JOB_ID", "0"))
-#if not jobID:
-#    jobID = int(os.environ.get("SLURM_JOBID", "0"))
-#if not jobID:
-#    jobID = int(os.environ.get("LSB_JOBINDEX", "0"))
-jobID = 3
 ap = ArgumentParser('')
-ap.add_argument('--output', default=f'ogun', help='output filename')
-ap.add_argument('--pos-dist', default='fixed', help='position distribution of emission')
+ap.add_argument('--i', default=1, help='loop number')
+ap.add_argument('--var', default='x', help='variable to vary')
+ap.add_argument('--output', default='test', help='output filename')
 ap.add_argument('--x', default=5.0, help='x emission location')
 ap.add_argument('--y', default=0.0, help='y emission location')
 ap.add_argument('--z', default=0.0, help='z emission location')
-ap.add_argument('--dir-dist', default='fixed', help='direction distrubtion of emission')
-ap.add_argument('--phi', default=90.0, help='phi emission direction')
+ap.add_argument('--phi', default=0.0, help='phi emission direction')
 ap.add_argument('--theta', default=180.0, help='theta emission direction')
 ap.add_argument('--psi', default=0.0, help='psi emission direction')
-ap.add_argument('--polx', default=0.0, help='polarization x')
-ap.add_argument('--poly', default=0.0, help='polarization y')
-ap.add_argument('--polz', default=1.0, help='polarization z')
-ap.add_argument('--pol-dist', default='fixed', help='direction distribution of polarization')
-ap.add_argument('--wave-dist', default='fixed', help='wavelength distribution')
-ap.add_argument('--wavelength', default=405.0, help='wavelength in nanometers')
-ap.add_argument('--numPhotons', default=100000, help='number of photons per event')
+ap.add_argument('--numPhotons', default=100, help='number of photons per event')
 opts = ap.parse_args()
 output_filename = opts.output
+jobID = int(opts.i)
+
+
 # example of using OpticalGun to simulate laser light source
 # laser source at the mirror (inside bar) emitting toward PMT's
 # ---------------------------------------------------------------
@@ -100,6 +89,8 @@ class FindCherenkovPhotons(Module):
             self.photons.append(
                                 (
                                  self.index,
+                                 self.sigma,
+                                 self.mu,
                                  production_time,
                                  production_x,
                                  production_y,
@@ -119,10 +110,13 @@ class FindCherenkovPhotons(Module):
                                 )
             )
         self.index += 1
+        self.mu += 1
 
 
     def terminate(self):
         photonColNames = ("evt_idx",
+                          "Sigma",
+                          "Mu",
                           "production_time",
                           "production_x",
                           "production_y",
@@ -141,16 +135,20 @@ class FindCherenkovPhotons(Module):
                           "detection_time"
                         )
         dfphotons = DataFrame(data=self.photons, columns=photonColNames)
-        store = pd.HDFStore(f'{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
+        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
         store["photons"] = dfphotons
         store.close()
+
+sigma = 0.1*int(opts.i)
+output_filename = 'ogun_gauss_{}_muplus_sigma{}'.format(opts.var, int(10*sigma))
+wavelength = 405.0
 
 # Create path
 main = create_path()
 
 # Set number of events to generate
 eventinfosetter = register_module('EventInfoSetter')
-eventinfosetter.param('evtNumList', [10])
+eventinfosetter.param('evtNumList', [2000])
 main.add_module(eventinfosetter)
 
 # Gearbox: access to database (xml files)
@@ -171,33 +169,46 @@ main.add_module(geometry)
 
 
 # Optical gun
-opticalgun = register_module('OpticalGun')
-opticalgun.param('angularDistribution', 'uniform')
-opticalgun.param('minAlpha', 0.0)
-opticalgun.param('maxAlpha', 0.00001)
-opticalgun.param('startTime', 0.0)
-opticalgun.param('pulseWidth', 0.0)
-opticalgun.param('numPhotons', int(opts.numPhotons))
-opticalgun.param('diameter', 0.0)
-opticalgun.param('slotID', 5)  # if nonzero, local (bar) frame, otherwise Belle II
-#opticalgun.param('positionDistribution', 'fixed')#opts.pos_dist)
-opticalgun.param('x', float(opts.x))
-opticalgun.param('y', float(opts.y))
-opticalgun.param('z', float(opts.z))
-#opticalgun.param('directionDistribution', opts.dir_dist)
-opticalgun.param('phi', float(opts.phi))
-opticalgun.param('theta', float(opts.theta))
-opticalgun.param('psi', float(opts.psi))
-#opticalgun.param('pol_x', float(opts.polx))
-#opticalgun.param('pol_y', float(opts.poly))
-#opticalgun.param('pol_z', float(opts.polz))
-#opticalgun.param('polarizationDistribution', opts.pol_dist)
-#opticalgun.param('wavelengthDistribution', opts.wave_dist)
-opticalgun.param('wavelength', float(opts.wavelength))
-main.add_module(opticalgun)
-
-print("pos_dist", opts.pos_dist)
-print("dir_dist", opts.dir_dist)
+for i in range(100):
+    x = float(opts.x)
+    y = float(opts.y)
+    z = float(opts.z)
+    phi = float(opts.phi)
+    theta = float(opts.theta)
+    psi = float(opts.psi)
+    if i < 50:
+        mu = 0.1*i//20
+    else:
+        mu = -0.1 * (i-50)//20
+    if opts.var == 'x':
+        x = np.random.normal(x + mu, sigma)
+    elif opts.var == 'y':
+        y = np.random.normal(y + mu, sigma)
+    elif opts.var == 'z':
+        z = np.random.normal(z + mu, sigma)
+    elif opts.var == 'phi':
+        phi = np.random.normal(phi + mu, sigma)
+    elif opts.var == 'theta':
+        theta = np.random.normal(theta + mu, sigma)
+    elif opts.var == 'psi':
+        psi = np.random.normal(psi + mu, sigma)
+    opticalgun = register_module('OpticalGun')
+    opticalgun.param('angularDistribution', 'uniform')
+    opticalgun.param('minAlpha', 0.0)
+    opticalgun.param('maxAlpha', 0.00001)
+    opticalgun.param('startTime', 0.0)
+    opticalgun.param('pulseWidth', 0.0)
+    opticalgun.param('numPhotons', int(opts.numPhotons))
+    opticalgun.param('diameter', 0.0)
+    opticalgun.param('slotID', 5)  # if nonzero, local (bar) frame, otherwise Belle II
+    opticalgun.param('x', x)
+    opticalgun.param('y', y)
+    opticalgun.param('z', z)
+    opticalgun.param('phi', phi)
+    opticalgun.param('theta', theta)
+    opticalgun.param('psi', psi)
+    opticalgun.param('wavelength', wavelength)
+    main.add_module(opticalgun)
 
 
 # Simulation
@@ -228,6 +239,8 @@ main.add_module(topdigi)
 # save as h5
 fcp = FindCherenkovPhotons()
 fcp.jobid = jobID
+fcp.sigma = sigma
+fcp.mu = 0
 fcp.fname = output_filename
 main.add_module(fcp)
 
@@ -241,5 +254,3 @@ process(main)
 # Print call statistics
 print(statistics)
 
-df = pd.read_hdf('{}_{}.h5'.format(output_filename, jobID))
-print(df)

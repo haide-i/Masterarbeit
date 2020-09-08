@@ -4,6 +4,7 @@ Metriken/
 'group meeting/
 venv/
 *.ipynb
+*.h5
 ekp_style/
 timeline/
 metrics_test/photon_data/__pycache__/

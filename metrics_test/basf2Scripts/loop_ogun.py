@@ -13,7 +13,7 @@ import os
 from argparse import ArgumentParser
 from FindCherenkovPhotons import FindCherenkovPhotons
 
-def randOpticalGun(output_filename, jobID, num_photons = 100, x=5.0, y=0.0, z=0.0, phi=0.0, theta=180.0, psi=0.0):
+def randOpticalGun(output_filename, jobID, sigma = 0.0, num_photons = 100, var = 'x', x=5.0, y=0.0, z=0.0, phi=0.0, theta=180.0, psi=0.0):
     
     wavelength = 405.0
     
@@ -46,55 +46,39 @@ def randOpticalGun(output_filename, jobID, num_photons = 100, x=5.0, y=0.0, z=0.
     # main.add_module(histo)
 
     # Optical gun
-    opticalgun = register_module('OpticalGun')
-    opticalgun.param('angularDistribution', 'uniform')
-    opticalgun.param('minAlpha', 0.0)
-    opticalgun.param('maxAlpha', 0.00001)
-    opticalgun.param('startTime', 0.0)
-    opticalgun.param('pulseWidth', 0.0)
-    opticalgun.param('numPhotons', int(num_photons))
-    opticalgun.param('diameter', 0.0)
-    opticalgun.param('slotID', 5)  # if nonzero, local (bar) frame, otherwise Belle II
-    #opticalgun.param('positionDistribution', 'fixed')#opts.pos_dist)
-    opticalgun.param('x', float(x))
-    opticalgun.param('y', float(y))
-    opticalgun.param('z', float(z))
-    #opticalgun.param('directionDistribution', opts.dir_dist)
-    opticalgun.param('phi', float(phi))
-    opticalgun.param('theta', float(theta))
-    opticalgun.param('psi', float(psi))
-    #opticalgun.param('pol_x', float(opts.polx))
-    #opticalgun.param('pol_y', float(opts.poly))
-    #opticalgun.param('pol_z', float(opts.polz))
-    #opticalgun.param('polarizationDistribution', opts.pol_dist)
-    #opticalgun.param('wavelengthDistribution', opts.wave_dist)
-    opticalgun.param('wavelength', float(wavelength))
-    main.add_module(opticalgun)
+    for i in range(5):
+        mu = 0.2 * i//20
+        print(mu)
+        if var == 'x':
+            x = np.random.normal(x + mu, sigma)
+        elif var == 'y':
+            y = np.random.normal(y + mu, sigma)
+        elif var == 'z':
+            z = np.random.normal(z + mu, sigma)
+        elif var == 'phi':
+            phi = np.random.normal(phi + mu, sigma)
+        elif var == 'theta':
+            theta = np.random.normal(theta + mu, sigma)
+        elif var == 'psi':
+            psi = np.random.normal(psi + mu, sigma)
+        opticalgun = register_module('OpticalGun')
+        opticalgun.param('angularDistribution', 'uniform')
+        opticalgun.param('minAlpha', 0.0)
+        opticalgun.param('maxAlpha', 0.00001)
+        opticalgun.param('startTime', 0.0)
+        opticalgun.param('pulseWidth', 0.0)
+        opticalgun.param('numPhotons', int(num_photons))
+        opticalgun.param('diameter', 0.0)
+        opticalgun.param('slotID', 5)  # if nonzero, local (bar) frame, otherwise Belle II
+        opticalgun.param('x', float(x))
+        opticalgun.param('y', float(y))
+        opticalgun.param('z', float(z))
+        opticalgun.param('phi', float(phi))
+        opticalgun.param('theta', float(theta))
+        opticalgun.param('psi', float(psi))
+        opticalgun.param('wavelength', float(wavelength))
+        main.add_module(opticalgun)
     
-    opticalgun2 = register_module('OpticalGun')
-    opticalgun2.param('angularDistribution', 'uniform')
-    opticalgun2.param('minAlpha', 0.0)
-    opticalgun2.param('maxAlpha', 0.00001)
-    opticalgun2.param('startTime', 0.0)
-    opticalgun2.param('pulseWidth', 0.0)
-    opticalgun2.param('numPhotons', int(num_photons))
-    opticalgun2.param('diameter', 0.0)
-    opticalgun2.param('slotID', 5)  # if nonzero, local (bar) frame, otherwise Belle II
-    #opticalgun.param('positionDistribution', 'fixed')#opts.pos_dist)
-    opticalgun2.param('x', float(x+2))
-    opticalgun2.param('y', float(y))
-    opticalgun2.param('z', float(z))
-    #opticalgun.param('directionDistribution', opts.dir_dist)
-    opticalgun2.param('phi', float(phi))
-    opticalgun2.param('theta', float(theta))
-    opticalgun2.param('psi', float(psi))
-    #opticalgun.param('pol_x', float(opts.polx))
-    #opticalgun.param('pol_y', float(opts.poly))
-    #opticalgun.param('pol_z', float(opts.polz))
-    #opticalgun.param('polarizationDistribution', opts.pol_dist)
-    #opticalgun.param('wavelengthDistribution', opts.wave_dist)
-    opticalgun2.param('wavelength', float(wavelength))
-    main.add_module(opticalgun2)
 
     print(x)
 
