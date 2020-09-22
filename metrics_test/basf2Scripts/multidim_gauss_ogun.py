@@ -90,7 +90,6 @@ class FindCherenkovPhotons(Module):
                                 (
                                  self.index,
                                  self.sigma,
-                                 self.mu,
                                  production_time,
                                  production_x,
                                  production_y,
@@ -110,13 +109,11 @@ class FindCherenkovPhotons(Module):
                                 )
             )
         self.index += 1
-        self.mu += 1
 
 
     def terminate(self):
         photonColNames = ("evt_idx",
                           "Sigma",
-                          "Mu",
                           "production_time",
                           "production_x",
                           "production_y",
@@ -135,12 +132,13 @@ class FindCherenkovPhotons(Module):
                           "detection_time"
                         )
         dfphotons = DataFrame(data=self.photons, columns=photonColNames)
-        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
+        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/multivariate/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
         store["photons"] = dfphotons
         store.close()
 
 sigma = 0.1*int(opts.i)
-output_filename = 'ogun_gauss_{}_muplus_sigma{}'.format(opts.var, int(10*sigma))
+cov = np.diag(np.full((5), sigma))
+output_filename = 'ogun_multivariategauss_withouty_sigma{}'.format(int(10*sigma))
 wavelength = 405.0
 
 # Create path
@@ -148,7 +146,7 @@ main = create_path()
 
 # Set number of events to generate
 eventinfosetter = register_module('EventInfoSetter')
-eventinfosetter.param('evtNumList', [2000])
+eventinfosetter.param('evtNumList', [200])
 main.add_module(eventinfosetter)
 
 # Gearbox: access to database (xml files)
@@ -176,22 +174,7 @@ for i in range(100):
     phi = float(opts.phi)
     theta = float(opts.theta)
     psi = float(opts.psi)
-    if i < 50:
-        mu = 0.1*i//20
-    else:
-        mu = -0.1 * (i-50)//20
-    if opts.var == 'x':
-        x = np.random.normal(x + mu, sigma)
-    elif opts.var == 'y':
-        y = np.random.normal(y + mu, sigma)
-    elif opts.var == 'z':
-        z = np.random.normal(z + mu, sigma)
-    elif opts.var == 'phi':
-        phi = np.random.normal(phi + mu, sigma)
-    elif opts.var == 'theta':
-        theta = np.random.normal(theta + mu, sigma)
-    elif opts.var == 'psi':
-        psi = np.random.normal(psi + mu, sigma)
+    x, z, phi, theta, psi = np.random.multivariate_normal([x, z, phi, theta, psi], cov)
     opticalgun = register_module('OpticalGun')
     opticalgun.param('angularDistribution', 'uniform')
     opticalgun.param('minAlpha', 0.0)
@@ -240,7 +223,6 @@ main.add_module(topdigi)
 fcp = FindCherenkovPhotons()
 fcp.jobid = jobID
 fcp.sigma = sigma
-fcp.mu = 0
 fcp.fname = output_filename
 main.add_module(fcp)
 

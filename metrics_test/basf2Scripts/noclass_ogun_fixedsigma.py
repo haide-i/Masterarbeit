@@ -137,12 +137,12 @@ class FindCherenkovPhotons(Module):
                           "detection_time"
                         )
         dfphotons = DataFrame(data=self.photons, columns=photonColNames)
-        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/mupm/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
+        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
         store["photons"] = dfphotons
         store.close()
 
-sigma = 0.1*int(opts.i)
-output_filename = 'ogun_gauss_{}_mu0p1_sigma{}'.format(opts.var, int(10*sigma))
+sigma = 0.4
+#output_filename = 'ogun_gauss_{}_mu0p1_y0_sigma{}'.format(opts.var, int(10*sigma))
 wavelength = 405.0
 
 # Create path
@@ -150,7 +150,7 @@ main = create_path()
 
 # Set number of events to generate
 eventinfosetter = register_module('EventInfoSetter')
-eventinfosetter.param('evtNumList', [400])
+eventinfosetter.param('evtNumList', [200])
 main.add_module(eventinfosetter)
 
 # Gearbox: access to database (xml files)
@@ -171,17 +171,14 @@ main.add_module(geometry)
 
 
 # Optical gun
-for i in range(200):
+mu = 0.1*float(opts.i)
+for i in range(100):
     x = float(opts.x)
     y = float(opts.y)
     z = float(opts.z)
     phi = float(opts.phi)
     theta = float(opts.theta)
     psi = float(opts.psi)
-    #if i < 50:
-    mu = 0.1*i//20
-    #else:
-    #    mu = -0.1 * (i-50)//20
     if opts.var == 'x':
         x = np.random.normal(x + mu, sigma)
     elif opts.var == 'y':
@@ -242,7 +239,7 @@ main.add_module(topdigi)
 fcp = FindCherenkovPhotons()
 fcp.jobid = jobID
 fcp.sigma = sigma
-fcp.mu = 0
+fcp.mu = mu
 fcp.fname = output_filename
 main.add_module(fcp)
 

@@ -39,13 +39,11 @@ class get_dstc(object):
 		self.variables(evt1, evt2, photons)
 		cls = ndKS()
 		if self.dim == 3:
-			self.dist = [cls(torch.stack((self.x1, self.y1, self.t1), axis=-1),
-                            torch.stack((self.x2, self.y2, self.t2), axis=-1)).item(), 
-                         self.compute_dist(evt1, evt2, p=True), self.compute_dist(evt1, evt2, p=False)]
+			self.dist = cls(torch.stack((self.x1, self.y1, self.t1), axis=-1),
+                            torch.stack((self.x2, self.y2, self.t2), axis=-1)).item()
 			return(self.dist)
 		if self.dim == 2:
 			self.dist = [cls(torch.stack((self.x1, self.y1), axis=-1), torch.stack((self.x2, self.y2), axis=-1)).item(), 
                          cls(torch.stack((self.x1, self.t1), axis=-1), torch.stack((self.x2, self.t2), axis=-1)).item(),
-                        cls(torch.stack((self.t1, self.y1), axis=-1), torch.stack((self.t2, self.y2), axis=-1)).item(),
-                        self.compute_dist(evt1, evt2, p=True), self.compute_dist(evt1, evt2, p=False)]
+                        cls(torch.stack((self.t1, self.y1), axis=-1), torch.stack((self.t2, self.y2), axis=-1)).item()]
 			return(self.dist)

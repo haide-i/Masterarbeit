@@ -199,3 +199,44 @@ print(total)
 print(inside_nbr)
 print("ratio = ", float(total)/inside_nbr)
 plt.show()
+
+# +
+df1 = pd.read_hdf('/ceph/ihaide/ogun/Gauss/ogun_gauss_x_mu0_sigma0_2.h5')
+df2 = pd.read_hdf('/ceph/ihaide/ogun/Gauss/ogun_gauss_x_mu10_sigma0_43.h5')
+df3 = pd.read_hdf('/ceph/ihaide/ogun/Gauss/ogun_gauss_x_mu20_sigma0_94.h5')
+df4 = pd.read_hdf('/ceph/ihaide/ogun/Gauss/ogun_gauss_x_mu40_sigma0_178.h5')
+
+detection_x = df1.detection_pixel_x
+detection_y = df1.detection_pixel_y
+
+plt.hist2d(detection_x, detection_y, bins=(100, 100))
+plt.xlabel("Detection Pixel x")
+plt.ylabel("Detection Pixel y")
+plt.title('$\sigma$ = 0, $\mu$ = 0')
+plt.show()
+detection_x = df2.detection_pixel_x
+detection_y = df2.detection_pixel_y
+
+plt.hist2d(detection_x, detection_y, bins=(100, 100))
+plt.xlabel("Detection Pixel x")
+plt.ylabel("Detection Pixel y")
+plt.title('$\sigma$ = 0, $\mu$ = 1')
+plt.show()
+detection_x = df3.detection_pixel_x
+detection_y = df3.detection_pixel_y
+
+plt.hist2d(detection_x, detection_y, bins=(100, 100))
+plt.xlabel("Detection Pixel x")
+plt.ylabel("Detection Pixel y")
+plt.title('$\sigma$ = 0, $\mu$ = 2')
+
+plt.show()
+detection_x = df4.detection_pixel_x
+detection_y = df4.detection_pixel_y
+
+plt.hist2d(detection_x, detection_y, bins=(100, 100))
+plt.xlabel("Detection Pixel x")
+plt.ylabel("Detection Pixel y")
+plt.title('$\sigma$ = 0, $\mu$ = 4')
+
+plt.show()

@@ -46,8 +46,6 @@ class FindCherenkovPhotons(Module):
             self.photons.append(
                                 (
                                  self.index,
-                                 self.sigma,
-                                 self.mu,
                                  m.getProductionTime(), #production_time,
                                  m.getVertex().x(), #production_x,
                                  m.getVertex().y(), #production_y,
@@ -91,8 +89,6 @@ class FindCherenkovPhotons(Module):
             self.photons.append(
                                 (
                                  self.index,
-                                 self.sigma,
-                                 self.mu,
                                  production_time,
                                  production_x,
                                  production_y,
@@ -112,13 +108,10 @@ class FindCherenkovPhotons(Module):
                                 )
             )
         self.index += 1
-        self.mu += 1
 
 
     def terminate(self):
         photonColNames = ("evt_idx",
-                          "Sigma",
-                          "Mu",
                           "production_time",
                           "production_x",
                           "production_y",
@@ -137,12 +130,12 @@ class FindCherenkovPhotons(Module):
                           "detection_time"
                         )
         dfphotons = DataFrame(data=self.photons, columns=photonColNames)
-        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/mupm/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
+        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/grid/diffpoints/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
         store["photons"] = dfphotons
         store.close()
 
-sigma = 0.1*int(opts.i)
-output_filename = 'ogun_gauss_{}_mu0p1_sigma{}'.format(opts.var, int(10*sigma))
+theta_diff = 0.1*int(opts.i)
+output_filename = f'ogun_momentumgrid_psirun_phiset_theta{int(10*theta_diff)}'
 wavelength = 405.0
 
 # Create path
@@ -150,7 +143,7 @@ main = create_path()
 
 # Set number of events to generate
 eventinfosetter = register_module('EventInfoSetter')
-eventinfosetter.param('evtNumList', [400])
+eventinfosetter.param('evtNumList', [202])
 main.add_module(eventinfosetter)
 
 # Gearbox: access to database (xml files)
@@ -171,29 +164,14 @@ main.add_module(geometry)
 
 
 # Optical gun
-for i in range(200):
+for i in range(101):
     x = float(opts.x)
     y = float(opts.y)
     z = float(opts.z)
     phi = float(opts.phi)
-    theta = float(opts.theta)
+    theta = float(opts.theta) + theta_diff - 5.
     psi = float(opts.psi)
-    #if i < 50:
-    mu = 0.1*i//20
-    #else:
-    #    mu = -0.1 * (i-50)//20
-    if opts.var == 'x':
-        x = np.random.normal(x + mu, sigma)
-    elif opts.var == 'y':
-        y = np.random.normal(y + mu, sigma)
-    elif opts.var == 'z':
-        z = np.random.normal(z + mu, sigma)
-    elif opts.var == 'phi':
-        phi = np.random.normal(phi + mu, sigma)
-    elif opts.var == 'theta':
-        theta = np.random.normal(theta + mu, sigma)
-    elif opts.var == 'psi':
-        psi = np.random.normal(psi + mu, sigma)
+    psi = -5. + (i)*0.1 + psi
     opticalgun = register_module('OpticalGun')
     opticalgun.param('angularDistribution', 'uniform')
     opticalgun.param('minAlpha', 0.0)
@@ -234,15 +212,13 @@ topdigi.param('timeZeroJitter', 0.0)
 main.add_module(topdigi)
 
 # Output
-#output = register_module('RootOutput')
-#output.param('outputFileName', 'opticalGun.root')
-#main.add_module(output)
+# output = register_module('RootOutput')
+# output.param('outputFileName', 'opticalGun.root')
+# main.add_module(output)
 
 # save as h5
 fcp = FindCherenkovPhotons()
 fcp.jobid = jobID
-fcp.sigma = sigma
-fcp.mu = 0
 fcp.fname = output_filename
 main.add_module(fcp)
 
