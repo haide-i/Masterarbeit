@@ -1,3 +1,4 @@
+data/
 Proposal/
 anfangsnotizen/
 Metriken/
@@ -6,14 +7,14 @@ venv/
 *.ipynb
 *.h5
 *.pdf
-*/uncertainty/
-*/.ipynb_checkpoints/
-*/__pycache__/
+uncertainty/
+.ipynb_checkpoints/
+__pycache__/
 ekp_style/
 timeline/
 metrics_test/photon_data/__pycache__/
 metrics_test/photon_data/.ipynb_checkpoints/
 metrics_test/.ipynb_checkpoints/
-*/plots/
+plots/
 pytorch_tut/
 Timeline/
