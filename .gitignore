@@ -5,6 +5,10 @@ group_meeting/
 venv/
 *.ipynb
 *.h5
+*.pdf
+*/uncertainty/
+*/.ipynb_checkpoints/
+*/__pycache__/
 ekp_style/
 timeline/
 metrics_test/photon_data/__pycache__/
