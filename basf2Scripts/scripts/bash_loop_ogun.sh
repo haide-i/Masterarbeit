@@ -7,7 +7,7 @@ declare -x psi=296.2887
 declare -x theta=328.9675
 declare -x phi=84.0527
 output='fixedsigma/ogun_gauss_theta_fixedsigma04_mu'
-
+cd /home/ihaide/Masterarbeit/basf2Scripts
 
 for i in {0..100}
 do

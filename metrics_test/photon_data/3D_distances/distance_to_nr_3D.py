@@ -21,7 +21,7 @@ from glob import glob
 home = os.getenv("HOME")
 cwd = os.getcwd()
 ceph = '/ceph/ihaide/distances/3D/'
-ogun_dir = '/home/ihaide/Documents/Masterarbeit-master/metrics_test/photon_data/OpticalGun/'
+ogun_dir = '/home/ihaide/Masterarbeit/metrics_test/photon_data/OpticalGun/'
 from IPython.core.display import display, HTML
 display(HTML("<style>.container { width:100% !important; }</style>"))
 

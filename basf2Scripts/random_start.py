@@ -8,7 +8,6 @@ theta = np.random.rand()*360
 phi = 0
 
 data = np.array([x, y, z, psi, theta, phi])
-#np.savetxt('startdata.txt', data)
-data
+np.savetxt('startdata.txt', data)
 
 

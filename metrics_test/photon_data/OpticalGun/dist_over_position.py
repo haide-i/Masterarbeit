@@ -21,7 +21,9 @@ sigma_name = np.arange(0, 100, 2)
 mu_diff = np.arange(0, 50, 5)
 dstc = get_dstc()
 photon_nr = (50, 150)
-keys = ['Sigma', 'Mu', 'production_x', 'production_y', 'production_z', 'production_px', 'production_py', 'production_pz', 'KS_distance', 'momentum_distance', 'position_distance']
+keys = ['Sigma', 'Mu', 'production_x', 'production_y', 'production_z', 
+    'production_px', 'production_py', 'production_pz', 'KS_distance', 
+    'momentum_distance', 'position_distance']
 distance_df = pd.DataFrame(columns=keys)
 
 ground_file = ceph + f'ogun_gauss_{var}_mu0_sigma0_1.h5'
@@ -58,4 +60,5 @@ for p in photon_nr:
     all_data = np.vstack((mu_sigma_new, distance_new))
     for idx, key in enumerate(keys):
         distance_df[key] = all_data[idx]
-    distance_df.to_hdf(ceph + f'distance/ogun_groundfl_{var}_dist_photons{p}.h5', key = 'distance_df', mode = 'w', complevel=9, complib='blosc:lz4')
+    distance_df.to_hdf(ceph + f'distance/ogun_groundfl_{var}_dist_photons{p}.h5', 
+                    key = 'distance_df', mode = 'w', complevel=9, complib='blosc:lz4')

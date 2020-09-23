@@ -7,6 +7,7 @@ declare -x psi=95.32992238
 declare -x theta=281.79759198
 declare -x phi=0.0
 
+cd /home/ihaide/Masterarbeit/basf2Scripts
 
 for i in {1601..1800}
 do

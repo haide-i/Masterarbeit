@@ -58,13 +58,16 @@ def run_distance(first):
                     file_rand = pd.read_hdf(dirname + 'clean_photons_100x1E5_70ns_{}.h5'.format(int(choose_rand[1])))
                     rand_event = file_rand[file_rand.evt_idx == int(choose_rand[0])]
                     x1, y1, t1, x2, y2, t2, xrand, yrand, trand = variables(chosen_event, rand_event, photons)
-                    data_array.append((event, frame, int(choose_rand[0]), int(choose_rand[1]), cls(torch.stack((x1, y1, t1), axis=-1), torch.stack((x2, y2, t2), axis=-1)), cls(torch.stack((x1, y1, t1), axis=-1), torch.stack((xrand, yrand, trand), axis=-1))))
+                    data_array.append((event, frame, int(choose_rand[0]), int(choose_rand[1]), 
+                                        cls(torch.stack((x1, y1, t1), axis=-1), torch.stack((x2, y2, t2), axis=-1)), 
+                                        cls(torch.stack((x1, y1, t1), axis=-1), torch.stack((xrand, yrand, trand), axis=-1))))
                 end = time.time()
                 print(frame, ' : ', start - end)
     data_array = np.asarray(data_array).T
     for idx, key in enumerate(keys):
         df[key] = data_array[idx]
-    df.to_hdf('/ceph/ihaide/distances/3D/3dKS_70ns_{}_{}_photons{}_{}.h5'.format(first, first+20, np.min(photons), np.max(photons)), key = 'df', mode = 'w', complevel=9, complib='blosc:lz4')
+    df.to_hdf('/ceph/ihaide/distances/3D/3dKS_70ns_{}_{}_photons{}_{}.h5'.format(first, first+20, np.min(photons), np.max(photons)), 
+            key = 'df', mode = 'w', complevel=9, complib='blosc:lz4')
     
 if __name__ == '__main__':
 	a_file = open("/ceph/ihaide/distances/events_sorted.pkl", "rb")

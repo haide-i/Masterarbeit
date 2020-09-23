@@ -7,9 +7,9 @@ declare -x psi=296.2887
 declare -x theta=328.9675
 declare -x phi=84.0527
 
-#conda activate test_basf2
-#source /cvmfs/belle.cern.ch/tools/b2setup release-05-00-00
+#source /cvmfs/belle.cern.ch/tools/b2setup release-05-00-01
 
+cd /home/ihaide/Masterarbeit/basf2Scripts
  
 for i in {8001..10000}
 do

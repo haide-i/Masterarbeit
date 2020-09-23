@@ -46,7 +46,6 @@ def variables(photon, evt1, evt2):
 
 
 def run_distance(first_frame):
-    cls = ndKS()
     dist = get_dstc(dim=3)
     last_frame = first_frame + 200
     photons = np.arange(10, 160, 10)

@@ -1,3 +1,5 @@
+*.json
+*.code-workspace
 *.out
 *.pdf
 *.csv

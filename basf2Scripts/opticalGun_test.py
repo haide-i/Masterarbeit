@@ -89,12 +89,12 @@ class FindCherenkovPhotons(Module):
             detection_point = p.getDetectionPoint()
             detection_x = detection_point.X()
             detection_y = detection_point.Y()
-            detection_z = detection_point.Z()
+            # detection_z = detection_point.Z()
             # print(detection_z)
             detection_dir = p.getDetectionDir()
             detection_px = detection_dir.X()
             detection_py = detection_dir.Y()
-            detection_pz = detection_dir.Z()
+            # detection_pz = detection_dir.Z()
             length = p.getLength()
             detection_time = p.getDetectionTime()
             self.photons.append(
@@ -265,6 +265,3 @@ process(main)
 
 # Print call statistics
 print(statistics)
-
-df = pd.read_hdf('{}_{}.h5'.format(output_filename, jobID))
-print(df)
