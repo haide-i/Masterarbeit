@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 import sys
-sys.path.append('/home/ihaide/Documents/Masterarbeit-master/metrics_test/photon_data')
+sys.path.append('/home/ihaide/Masterarbeit/metrics_test/photon_data')
 from class_distance import get_dstc
 ceph = '/ceph/ihaide/ogun/Gauss/grid/'
+
 def variables(evt1):
     x = evt1.production_x.mean(axis = 0)
     y = evt1.production_y.mean(axis = 0)

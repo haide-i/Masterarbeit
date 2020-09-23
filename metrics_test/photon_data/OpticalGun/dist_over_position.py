@@ -2,18 +2,18 @@ import numpy as np
 import pandas as pd
 import os
 import sys
-sys.path.append('/home/ihaide/Documents/Masterarbeit-master/metrics_test/photon_data')
+sys.path.append('/home/ihaide/Masterarbeit/metrics_test/photon_data')
 from class_distance import get_dstc
 ceph = '/ceph/ihaide/ogun/Gauss/'
 
 
 def variables(evt1):
-    x = evt1.production_x.mean(axis = 0)
-    y = evt1.production_y.mean(axis = 0)
-    z = evt1.production_z.mean(axis = 0)
-    px = evt1.production_px.mean(axis = 0)
-    py = evt1.production_py.mean(axis = 0)
-    pz = evt1.production_pz.mean(axis = 0)
+    x = evt1.production_x.mean(axis=0)
+    y = evt1.production_y.mean(axis=0)
+    z = evt1.production_z.mean(axis=0)
+    px = evt1.production_px.mean(axis=0)
+    py = evt1.production_py.mean(axis=0)
+    pz = evt1.production_pz.mean(axis=0)
     return x, y, z, px, py, pz
 
 var = 'x'

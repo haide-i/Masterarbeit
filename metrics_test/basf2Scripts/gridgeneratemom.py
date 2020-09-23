@@ -78,12 +78,9 @@ class FindCherenkovPhotons(Module):
             detection_point = p.getDetectionPoint()
             detection_x = detection_point.X()
             detection_y = detection_point.Y()
-            detection_z = detection_point.Z()
-            # print(detection_z)
             detection_dir = p.getDetectionDir()
             detection_px = detection_dir.X()
             detection_py = detection_dir.Y()
-            detection_pz = detection_dir.Z()
             length = p.getLength()
             detection_time = p.getDetectionTime()
             self.photons.append(
@@ -99,10 +96,8 @@ class FindCherenkovPhotons(Module):
                                  production_e,
                                  detection_x,
                                  detection_y,
-                                #  detection_z,
                                  detection_px,
                                  detection_py,
-                                #  detection_pz,
                                  length,
                                  detection_time
                                 )
