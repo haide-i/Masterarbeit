@@ -1,7 +1,7 @@
 Proposal/
 anfangsnotizen/
 Metriken/
-'group meeting'/
+group_meeting/
 venv/
 *.ipynb
 *.h5
@@ -11,5 +11,5 @@ metrics_test/photon_data/__pycache__/
 metrics_test/photon_data/.ipynb_checkpoints/
 metrics_test/.ipynb_checkpoints/
 */plots/
-'Tutorials pytorch'/
+pytorch_tut/
 Timeline/
