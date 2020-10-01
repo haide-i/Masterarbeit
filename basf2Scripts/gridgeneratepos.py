@@ -130,7 +130,7 @@ class FindCherenkovPhotons(Module):
                           "detection_time"
                         )
         dfphotons = DataFrame(data=self.photons, columns=photonColNames)
-        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/grid/diffpoints/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
+        store = pd.HDFStore(f'/ceph/ihaide/ogun/Gauss/grid/diffpoints2/{self.fname}_{self.jobid}.h5', complevel=9, complib='blosc:lz4')
         store["photons"] = dfphotons
         store.close()
 

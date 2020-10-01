@@ -18,7 +18,7 @@ import pandas as pd
 import sys
 sys.path.append('/home/Documents/Masterarbeit-master/metrics_test/photon_data/')
 from ndks import ndKS
-from class_distance import get_dstc
+from distance import getDist
 import torch
 import torch.multiprocessing as mp
 import pickle
@@ -29,7 +29,7 @@ ceph = '/ceph/ihaide/'
 
 def run_distance(first_frame):
     cls = ndKS()
-    dist = get_dstc(dim=dim)
+    dist = getDist(dim=2)
     last_frame = first_frame + 200
     photons = np.arange(10, 160, 10)
     data_array = []
@@ -59,7 +59,6 @@ def run_distance(first_frame):
 
 
 if __name__ == '__main__':
-    dim = 2
     keys = ['photons', 'evt_idx', 'file', 'rand_evt_idx', 'rand_file', 'KS_3D', 'dist_p', 'dist_x']
     a_file = open("/ceph/ihaide/distances/events_sorted.pkl", "rb")
     evt_dict = pickle.load(a_file)

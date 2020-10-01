@@ -4,7 +4,7 @@ import sys
 from ndks import ndKS
 
 
-class get_dstc(object):
+class getDist(object):
 	def __init__(self, dim=3, xmin=-22.5, xmax=22.5,
                 ymin = -4.5, ymax=1.0, tmin=0.0, tmax = 70.0):
 		self.dim = dim

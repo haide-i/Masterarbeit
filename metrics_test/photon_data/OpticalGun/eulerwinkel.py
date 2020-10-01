@@ -31,7 +31,7 @@ def rotZ(a):
 
     return rotmat
 
-def get_momenta(phi, theta, psi, v=[0, 0, 1.]):
+def get_momenta(psi, theta, phi, v=[0, 0, 1.]):
     psi = psi * math.pi/180.
     theta = theta * math.pi/180.
     phi = phi * math.pi/180.

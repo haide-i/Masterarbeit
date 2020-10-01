@@ -13,10 +13,8 @@
 #     name: python3
 # ---
 
-import h5py as h5
 import numpy as np
 import os
-import gzip
 import pandas as pd
 import matplotlib.pyplot as plt
 from glob import glob
@@ -56,17 +54,15 @@ plt.hist2d(chosen_event.detection_pixel_x, chosen_event.detection_pixel_y, bins=
 plt.colorbar()
 plt.xlabel('x')
 plt.ylabel('y')
-plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/photons/event406_xyhist.pdf')
+plt.savefig('./plots/photons/event406_xyhist.pdf')
 plt.show()
 plt.hist(chosen_event.detection_time, bins = 100)
 plt.yscale('log')
 plt.xlabel('Detection time in ns')
 plt.ylabel('Counts')
-plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/photons/event406_detection_time.pdf')
+plt.savefig('./plots/photons/event406_detection_time.pdf')
 plt.show()
 
-
-chosen_event.head()
 
 plt.figure(figsize = (16, 2))
 x_start = chosen_event.production_x.mean(axis=0)
@@ -127,7 +123,7 @@ plt.hist2d(chosen_event.iloc[event_sample2,:].detection_pixel_x, chosen_event.il
 plt.colorbar()
 plt.xlabel('x')
 plt.ylabel('y')
-plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/photons/event406_xyhist_100_1.png')
+plt.savefig('./plots/photons/event406_xyhist_100_1.png')
 plt.show()
 
 # +
@@ -136,7 +132,7 @@ plt.hist2d(chosen_event.iloc[event_sample1,:].detection_pixel_x, chosen_event.il
 plt.colorbar()
 plt.xlabel('x')
 plt.ylabel('y')
-plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/photons/event406_xyhist_100_2.png')
+plt.savefig('./plots/photons/event406_xyhist_100_2.png')
 
 plt.show()
 
@@ -146,7 +142,7 @@ plt.hist2d(random_event.iloc[event_sample3,:].detection_pixel_x, random_event.il
 plt.colorbar()
 plt.xlabel('x')
 plt.ylabel('y')
-plt.savefig(home + '/Documents/Masterarbeit-master/metrics_test/plots/photons/rand_event_xyhist_100_1.png')
+plt.savefig('./plots/photons/rand_event_xyhist_100_1.png')
 
 plt.show()
 # -
