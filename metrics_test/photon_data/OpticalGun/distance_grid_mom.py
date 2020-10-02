@@ -16,7 +16,7 @@ def variables(evt1):
     pz = evt1.production_pz.mean(axis = 0)
     return x, y, z, px, py, pz
 
-photons = (10, 20, 30, 50, 150)
+photons = (200, 300, 400, 1000)
 keys = ['nr_photons', 'ground_x', 'ground_y', 'ground_z', 'ground_px', 'ground_py', 'ground_pz', 
         'comp_x', 'comp_y', 'comp_z', 'comp_px', 'comp_py', 'comp_pz',
        'KS_dist']
@@ -52,4 +52,4 @@ p_new = np.asarray(ph).T
 all_data = np.vstack((ph, var1_new, var2_new, distance_new))
 for idx, key in enumerate(keys):
     save_df[key] = all_data[idx]
-save_df.to_hdf(ceph + f'distance/ogun_momentumgrid_diffpoints_distall.h5', key = 'save_df', mode = 'w', complevel=9, complib='blosc:lz4')
+save_df.to_hdf(ceph + f'distance/ogun_momentumgrid_highphotons_diffpoints_distall.h5', key = 'save_df', mode = 'w', complevel=9, complib='blosc:lz4')

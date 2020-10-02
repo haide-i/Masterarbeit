@@ -42,15 +42,11 @@ for var in list(itertools.combinations(comb, 2)):
         help_df = pos_df[pos_df.nr_photons == p]
         help_df = help_df[help_df.round(4).comp_y <= 0.8]
         help_df = help_df[help_df.round(4)[f'comp_{novar[0]}'] == groundcoord[novar[0]]]
-        bins = {'x' : len(help_df.round(4).drop_duplicates(subset=['comp_x'])), 
-                'y' : len(help_df.round(4).drop_duplicates(subset=['comp_y'])),
-                'z' : len(help_df.round(4).drop_duplicates(subset=['comp_z']))}
+        bins = {'x' : np.sort(help_df.round(4).comp_x.unique()) + 0.05, 
+                'y' : np.sort(help_df.round(4).comp_y.unique()) + 0.05,
+                'z' : np.sort(help_df.round(4).comp_z.unique()) + 0.05}
         length = help_df[f'comp_{var[0]}'].max(axis = 0) - help_df[f'comp_{var[0]}'].min(axis = 0)
         height = help_df[f'comp_{var[1]}'].max(axis = 0) - help_df[f'comp_{var[1]}'].min(axis = 0)
-        if var[1] == 'x':
-            plt.figure(figsize = (length + 2, height))
-        if var[1] =='y':
-            plt.figure(figsize = (length, 2*height))
         plt.hist2d(help_df[f'comp_{var[0]}'].round(4), help_df[f'comp_{var[1]}'].round(4), bins=(bins[var[0]], bins[var[1]]), cmin = 0.00001, cmap = 'YlGnBu',  weights = help_df.KS_dist, norm=mcolors.PowerNorm(0.7))
         plt.xlabel(f'{var[0]}')
         plt.ylabel(f'{var[1]}')
@@ -59,14 +55,14 @@ for var in list(itertools.combinations(comb, 2)):
         plt.savefig(f'./plots/pos_mom_dis/ks_dist_overdist_{var[0]}_{var[1]}_lastvar0_plane_{int(p)}photons_{datadir}.pdf')
         plt.show()
 
+mom_df = pd.read_hdf(ceph + 'distance/ogun_momentumgrid_highphotons_diffpoints_distall.h5')
 momentum_arr = mom_df[['comp_px', 'comp_py', 'comp_pz']].to_numpy().T
 theta, psi = get_angle(momentum_arr)
 mom_df['theta'] = theta
 mom_df['psi'] = psi
 
-mom_df[mom_df.KS_dist < 0.3]
-
 n = 3
+photons = (200, 300, 400, 1000)
 for p in photons:
     help_df = mom_df[mom_df.nr_photons == p]
     help_df = help_df.round(n).drop_duplicates(subset = ['theta', 'psi'])
